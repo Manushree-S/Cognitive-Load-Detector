@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Result{% endblock %}
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+
+    <div class="card shadow p-4 text-center" style="width: 420px; border-radius: 12px;">
+
+        <h3 class="mb-3">🧠 Your Cognitive Load</h3>
+
+        <!-- LOAD -->
+        <h1 class="
+            {% if load == 'Low' %}text-success
+            {% elif load == 'Medium' %}text-warning
+            {% else %}text-danger
+            {% endif %}
+        ">
+            {{ load }}
+        </h1>
+
+        <hr>
+
+        <!-- BASIC DATA -->
+        <p class="fs-5"><b>Errors:</b> {{ errors }}</p>
+        <p class="fs-5"><b>Time Taken:</b> {{ time }} seconds</p>
+        <p class="fs-5"><b>Accuracy:</b> {{ accuracy }}%</p>
+
+        <!-- 🔥 NEW: USER TYPE -->
+        <p class="fs-5"><b>User Type:</b> {{ user_type|title }}</p>
+
+        <!-- 🔥 NEW: BEHAVIOR DATA -->
+        <p class="fs-6"><b>Cursor Movements:</b> {{ movements }}</p>
+        <p class="fs-6"><b>Idle Time:</b> {{ idle_time }} sec</p>
+
+        <!-- 🧠 FEEDBACK -->
+        {% if load == "High" %}
+        <p class="text-danger">
+            High cognitive load detected. Consider taking breaks and reducing distractions.
+        </p>
+        {% elif load == "Medium" %}
+        <p class="text-warning">
+            Moderate load. Try improving focus and accuracy.
+        </p>
+        {% else %}
+        <p class="text-success">
+            Excellent! You are performing efficiently with low cognitive load.
+        </p>
+        {% endif %}
+
+        <!-- BUTTONS (FIXED ✅) -->
+        <div class="mt-3">
+            <a href="{% url 'test' %}" class="btn btn-primary m-1">
+                Try Again
+            </a>
+
+            <a href="{% url 'dashboard' %}" class="btn btn-success m-1">
+                View Dashboard
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

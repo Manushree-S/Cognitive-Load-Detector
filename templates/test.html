@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Cognitive Quiz{% endblock %}
+
+{% block content %}
+
+<style>
+    body {
+        background-color: #f4f6f8;
+        font-family: 'OpenDyslexic', Arial, sans-serif;
+        line-height: 1.8;
+        letter-spacing: 1px;
+    }
+
+    .card {
+        max-width: 700px;
+        margin: auto;
+        margin-top: 40px;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        background: white;
+    }
+
+    .question-block {
+        display: none;
+    }
+
+    .question-block.active {
+        display: block;
+    }
+</style>
+
+<div class="card">
+
+    <h3 class="text-center mb-3">🧠 Cognitive Quiz</h3>
+
+    <!-- Voice Toggle -->
+    <div class="text-center mb-2">
+        <button type="button" class="btn btn-info" onclick="toggleVoice()">
+            🔊 Toggle Voice
+        </button>
+    </div>
+
+    <!-- Timer -->
+    <p class="text-center">
+        Time Elapsed: <span id="timer">0</span> sec
+    </p>
+
+    <!-- Debug Display -->
+    <p class="text-center small text-muted">
+        Moves: <span id="debugMoves">0</span> |
+        Idle: <span id="debugIdle">0</span>
+    </p>
+
+    <!-- Progress -->
+    <div class="progress mb-3">
+        <div id="progressBar" class="progress-bar bg-success" style="width: 0%"></div>
+    </div>
+
+    <form method="POST" id="quizForm">
+        {% csrf_token %}
+
+        <input type="hidden" name="start_time" value="{{ start_time }}">
+        <input type="hidden" name="movement_count" id="movement_count">
+        <input type="hidden" name="idle_time" id="idle_time">
+
+        {% for q in questions %}
+        <div class="question-block {% if forloop.first %}active{% endif %}">
+
+            <p class="question-text">
+                <b>{{ forloop.counter }}. {{ q.q }}</b>
+            </p>
+
+            {% for opt in q.options %}
+            <div class="form-check">
+                <input class="form-check-input"
+                       type="radio"
+                       name="q{{ forloop.parentloop.counter }}"
+                       value="{{ opt }}"
+                       required>
+
+                <label class="form-check-label">
+                    {{ opt }}
+                </label>
+            </div>
+            {% endfor %}
+
+            <button type="button" class="btn btn-primary mt-3 w-100" onclick="nextQuestion()">
+                Next
+            </button>
+
+        </div>
+        {% endfor %}
+
+    </form>
+
+</div>
+
+<script>
+let current = 0;
+const questions = document.querySelectorAll(".question-block");
+const total = questions.length;
+
+/* TIMER */
+let seconds = 0;
+setInterval(() => {
+    seconds++;
+    document.getElementById("timer").innerText = seconds;
+}, 1000);
+
+/* VOICE SYSTEM */
+let voiceEnabled = true;
+
+function convertMathText(text) {
+    return text
+        .replace(/\+/g, " plus ")
+        .replace(/-/g, " minus ")
+        .replace(/\*/g, " multiplied by ")
+        .replace(/\//g, " divided by ")
+        .replace(/=/g, " equals ");
+}
+
+function numberToWord(n) {
+    const words = ["First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth","Ninth","Tenth"];
+    return words[n - 1] || n;
+}
+
+function speak(text) {
+    if (!voiceEnabled) return;
+
+    window.speechSynthesis.cancel();
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.rate = 0.85;
+
+    window.speechSynthesis.speak(speech);
+}
+
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    alert(voiceEnabled ? "Voice ON" : "Voice OFF");
+}
+
+function speakQuestion(index) {
+    const qBlock = questions[index];
+
+    let questionText = qBlock.querySelector(".question-text").innerText;
+
+    let parts = questionText.split(".");
+    let qNumber = parseInt(parts[0]);
+    let actualQuestion = parts.slice(1).join(".").trim();
+
+    let questionWord = numberToWord(qNumber);
+    actualQuestion = convertMathText(actualQuestion);
+
+    let optionsText = "";
+    const options = qBlock.querySelectorAll("label");
+
+    options.forEach(opt => {
+        optionsText += convertMathText(opt.innerText) + ", ";
+    });
+
+    speak(questionWord + " question. " + actualQuestion + ". Options are: " + optionsText);
+}
+
+/* 🔥 CURSOR + IDLE TRACKING (FINAL FIX) */
+let cursorMoves = 0;
+let idleSeconds = 0;
+let lastActivityTime = Date.now();
+
+function registerActivity() {
+    cursorMoves++;
+    lastActivityTime = Date.now();
+
+    document.getElementById("debugMoves").innerText = cursorMoves;
+}
+
+// Track ALL activity
+document.addEventListener("mousemove", registerActivity);
+document.addEventListener("click", registerActivity);
+document.addEventListener("keydown", registerActivity);
+document.addEventListener("scroll", registerActivity);
+
+// Idle detection
+setInterval(() => {
+    let now = Date.now();
+
+    if (now - lastActivityTime > 2000) {
+        idleSeconds++;
+        document.getElementById("debugIdle").innerText = idleSeconds;
+    }
+}, 1000);
+
+/* NEXT QUESTION */
+function nextQuestion() {
+    const selected = questions[current].querySelector("input[type=radio]:checked");
+
+    if (!selected) {
+        alert("Please select an option");
+        return;
+    }
+
+    questions[current].classList.remove("active");
+    current++;
+
+    let progress = (current / total) * 100;
+    document.getElementById("progressBar").style.width = progress + "%";
+
+    if (current < total) {
+        questions[current].classList.add("active");
+        speakQuestion(current);
+    } else {
+        // 🔥 IMPORTANT FIX
+        document.getElementById("movement_count").value = cursorMoves;
+        document.getElementById("idle_time").value = idleSeconds;
+
+        console.log("FINAL DATA:", cursorMoves, idleSeconds);
+
+        document.getElementById("quizForm").submit();
+    }
+}
+
+/* START */
+window.onload = () => {
+    speakQuestion(0);
+};
+</script>
+
+{% endblock %}

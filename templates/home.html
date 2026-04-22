@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+
+    <div class="card p-4 shadow text-center" style="width: 420px; border-radius: 12px;">
+
+        <h2 class="mb-4">Welcome {{ request.user.username }}</h2>
+
+        <div>
+            <a href="{% url 'test' %}" class="btn btn-primary m-2 w-100">
+                Start Cognitive Test
+            </a>
+
+            <a href="{% url 'dashboard' %}" class="btn btn-success m-2 w-100">
+                View Dashboard
+            </a>
+
+            <a href="{% url 'logout' %}" class="btn btn-danger m-2 w-100">
+                Logout
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
