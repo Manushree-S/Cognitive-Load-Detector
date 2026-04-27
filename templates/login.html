@@ -1,14 +1,43 @@
-<h2>Login</h2>
+{% extends 'base.html' %}
 
-{% if error %}
-<p style="color:red;">{{ error }}</p>
-{% endif %}
+{% block title %}Login{% endblock %}
 
-<form method="POST">
-    {% csrf_token %}
-    <input type="text" name="username"><br>
-    <input type="password" name="password"><br>
-    <button type="submit">Login</button>
-</form>
+{% block content %}
 
-<a href="/register/">Register</a>
+<div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+
+    <div class="card shadow p-4" style="width: 400px; border-radius: 12px;">
+
+        <h3 class="text-center mb-4">Login</h3>
+
+        {% if error %}
+            <div class="alert alert-danger text-center">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="/register/">Don't have an account? Register</a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -34,6 +34,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Attempt</th>
+                    <th>Date & Time</th>
                     <th>Time (s)</th>
                     <th>Errors</th>
                     <th>Load</th>
@@ -44,8 +45,13 @@
                 {% for r in results %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
+
+                    <!-- ✅ FIXED (THIS WAS WRONG BEFORE) -->
+                    <td>{{ r.created_at|date:"d M Y, H:i" }}</td>
+
                     <td>{{ r.time_taken }}</td>
                     <td>{{ r.errors }}</td>
+
                     <td>
                         <span class="
                             {% if r.load_level == 'Low' %}text-success
@@ -59,21 +65,21 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4">No attempts yet</td>
+                    <td colspan="5">No attempts yet</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
+        <!-- 🔥 GRAPH HEADING (NEW) -->
+        <h4 class="text-center mt-4">Performance Analysis (Errors per Attempt)</h4>
+
         <!-- GRAPH -->
-        <canvas id="errorChart" class="mt-4"></canvas>
+        <canvas id="errorChart" class="mt-3"></canvas>
 
         <!-- BUTTONS -->
         <div class="text-center mt-4">
-            <!-- ✅ FIXED -->
             <a href="{% url 'test' %}" class="btn btn-primary m-1">Take Test Again</a>
-
-            <!-- Home stays same -->
             <a href="/" class="btn btn-secondary m-1">Home</a>
         </div>
 

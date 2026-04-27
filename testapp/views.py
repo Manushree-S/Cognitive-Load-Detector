@@ -147,8 +147,7 @@ def calculate_cognitive_load(user_type, accuracy, time_taken, errors, idle_time,
 # 📊 STEP 3: DASHBOARD VIEW
 @login_required
 def dashboard(request):
-    results = TestResult.objects.filter(user=request.user).order_by('id')
-
+    results = TestResult.objects.filter(user=request.user).order_by('-created_at')
     attempts = list(range(1, len(results) + 1))
     errors = [r.errors for r in results]
     times = [r.time_taken for r in results]
