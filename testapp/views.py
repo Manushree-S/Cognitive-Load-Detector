@@ -17,23 +17,25 @@ questions = [
 ]
 
 
-# 🧠 STEP 1: USER TYPE SELECTION
+# 🧠 USER TYPE SELECTION
 @login_required
 def select_user_type(request):
+
     if request.method == "POST":
+
         user_type = request.POST.get('user_type', 'normal')
 
-        # safety check
         if user_type not in ['normal', 'adhd', 'dyslexia']:
             user_type = 'normal'
 
         request.session['user_type'] = user_type
+
         return redirect('/test/')
 
     return render(request, 'user_type.html')
 
 
-# 🧠 STEP 2: QUIZ VIEW
+# 🧠 QUIZ PAGE
 @login_required
 def test_page(request):
 
@@ -41,12 +43,14 @@ def test_page(request):
 
     if request.method == "POST":
 
-        # ⏱ TIME CALCULATION
+        # ⏱ TIME
         start_time = float(request.POST.get('start_time', time.time()))
+
         end_time = time.time()
+
         time_taken = round(end_time - start_time, 2)
 
-        # 🖱 CURSOR + IDLE (SAFE PARSING)
+        # 🖱 CURSOR + IDLE
         try:
             idle_time = float(request.POST.get('idle_time', 0))
         except:
@@ -57,116 +61,298 @@ def test_page(request):
         except:
             movement_count = 0
 
-        # 🔥 DEBUG (CHECK TERMINAL)
-        print("\n===== DEBUG DATA =====")
-        print("User Type:", user_type)
-        print("Cursor Movements:", movement_count)
-        print("Idle Time:", idle_time)
-        print("======================\n")
-
+        # ❌ ERRORS
         errors = 0
+
         total_questions = len(questions)
 
-        # ✅ CHECK ANSWERS
         for i, q in enumerate(questions):
+
             user_ans = request.POST.get(f"q{i+1}")
+
             if user_ans is None or user_ans != q["answer"]:
                 errors += 1
 
         # 🎯 ACCURACY
-        accuracy = ((total_questions - errors) / total_questions) * 100
+        accuracy = (
+            (total_questions - errors)
+            / total_questions
+        ) * 100
 
-        # 🧠 COGNITIVE LOAD CALCULATION
+        # =====================================
+        # 🔥 REALISTIC BEHAVIOR METRICS
+        # =====================================
+
+        # ⏱ Convert to minutes
+        time_minutes = max(time_taken / 60, 0.1)
+
+        # 🖱 Movement Rate per minute
+        movement_rate = round(
+            movement_count / time_minutes,
+            2
+        )
+
+        # 😴 Idle Percentage
+        idle_rate = round(
+            (idle_time / time_taken) * 100,
+            2
+        )
+
+        # =====================================
+        # 🧠 LOAD DETECTION
+        # =====================================
+
         load = calculate_cognitive_load(
             user_type,
             accuracy,
             time_taken,
             errors,
-            idle_time,
-            movement_count
+            movement_rate,
+            idle_rate
         )
 
-        # 💾 SAVE TO DATABASE
+        # =====================================
+        # 💾 SAVE DATABASE
+        # =====================================
+
         TestResult.objects.create(
+
             user=request.user,
+
             user_type=user_type,
+
             time_taken=time_taken,
+
             errors=errors,
+
             load_level=load,
+
             cursor_movements=movement_count,
-            idle_time=idle_time
+
+            idle_time=idle_time,
+
+            movement_rate=movement_rate,
+
+            idle_rate=idle_rate
         )
+
+        # =====================================
+        # 🧠 REALISTIC ANALYSIS
+        # =====================================
+
+        analysis = ""
+
+        if user_type == "adhd":
+
+            if movement_rate > 150:
+
+                analysis += (
+                    "High interaction frequency detected. "
+                    "This may indicate hyperactivity or attention fluctuation. "
+                )
+
+            if idle_rate < 10:
+
+                analysis += (
+                    "Very low idle behavior suggests continuous rapid interaction. "
+                )
+
+        elif user_type == "dyslexia":
+
+            if idle_rate > 25:
+
+                analysis += (
+                    "Extended pauses detected during question solving. "
+                    "This may indicate reading or processing difficulty. "
+                )
+
+            if time_taken > 60:
+
+                analysis += (
+                    "Longer response duration suggests increased cognitive effort during reading tasks. "
+                )
+
+        else:
+
+            analysis += (
+                "Behavioral interaction patterns appear balanced and cognitively stable. "
+            )
+
+        # =====================================
+        # 🎯 RESULT PAGE
+        # =====================================
 
         return render(request, 'result.html', {
+
             'load': load,
+
             'errors': errors,
+
             'time': time_taken,
+
             'accuracy': round(accuracy, 2),
+
             'user_type': user_type,
-            'idle_time': idle_time,
-            'movements': movement_count
+
+            'movement_rate': movement_rate,
+
+            'idle_rate': idle_rate,
+
+            'analysis': analysis
         })
 
     return render(request, 'test.html', {
+
         'questions': questions,
+
         'start_time': time.time()
+
     })
 
 
-# 🧠 CORE LOGIC FUNCTION (VERY IMPORTANT)
-def calculate_cognitive_load(user_type, accuracy, time_taken, errors, idle_time, movement_count):
+# 🧠 LOAD CALCULATION LOGIC
+def calculate_cognitive_load(
 
-    # 🔥 ADHD LOGIC (hyperactivity + distraction)
+    user_type,
+    accuracy,
+    time_taken,
+    errors,
+    movement_rate,
+    idle_rate
+
+):
+
+    # 🔥 ADHD
     if user_type == "adhd":
-        if movement_count > 300 or idle_time > 12 or errors > 3:
+
+        if movement_rate > 180 or errors > 3:
             return "High"
-        elif movement_count > 150 or errors >= 2:
+
+        elif movement_rate > 120 or errors >= 2:
             return "Medium"
+
         else:
             return "Low"
 
-    # 🔥 DYSLEXIA LOGIC (slow reading + accuracy issues)
+    # 🔥 DYSLEXIA
     elif user_type == "dyslexia":
-        if accuracy < 40 or time_taken > 90:
+
+        if idle_rate > 30 or time_taken > 90:
             return "High"
-        elif accuracy < 70 or time_taken > 60:
+
+        elif idle_rate > 20 or time_taken > 60:
             return "Medium"
+
         else:
             return "Low"
 
     # 🔥 NORMAL USERS
     else:
+
         if accuracy < 50 or time_taken > 60:
             return "High"
+
         elif accuracy < 80 or time_taken > 40:
             return "Medium"
+
         else:
             return "Low"
 
 
-# 📊 STEP 3: DASHBOARD VIEW
+# 📊 DASHBOARD
 @login_required
 def dashboard(request):
-    results = TestResult.objects.filter(user=request.user).order_by('-created_at')
+
+    results = TestResult.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
     attempts = list(range(1, len(results) + 1))
+
     errors = [r.errors for r in results]
+
     times = [r.time_taken for r in results]
-    movements = [r.cursor_movements for r in results]
-    idle_times = [r.idle_time for r in results]
+
+    movement_rates = [r.movement_rate for r in results]
+
+    idle_rates = [r.idle_rate for r in results]
 
     total_questions = len(questions)
 
     accuracies = [
-        round(((total_questions - r.errors) / total_questions) * 100, 2)
+
+        round(
+            ((total_questions - r.errors)
+             / total_questions) * 100,
+            2
+        )
+
         for r in results
     ]
 
+    # =====================================
+    # 🧠 PERFORMANCE ANALYSIS
+    # =====================================
+
+    analysis = ""
+
+    if len(results) == 0:
+
+        analysis = "No test attempts available yet."
+
+    else:
+
+        avg_accuracy = sum(accuracies) / len(accuracies)
+
+        avg_movement = sum(movement_rates) / len(movement_rates)
+
+        avg_idle = sum(idle_rates) / len(idle_rates)
+
+        if avg_accuracy >= 80:
+
+            analysis += (
+                "Recent performance appears accurate and stable. "
+            )
+
+        elif avg_accuracy >= 60:
+
+            analysis += (
+                "Moderate performance trend detected with scope for improvement. "
+            )
+
+        else:
+
+            analysis += (
+                "Recent attempts indicate increased cognitive strain. "
+            )
+
+        if avg_movement > 150:
+
+            analysis += (
+                "Higher movement frequency may indicate attention instability or restlessness. "
+            )
+
+        if avg_idle > 25:
+
+            analysis += (
+                "Extended pause behavior suggests increased cognitive processing effort. "
+            )
+
     return render(request, 'dashboard.html', {
+
         'results': results,
+
         'attempts': attempts,
+
         'errors': errors,
+
         'times': times,
+
         'accuracies': accuracies,
-        'movements': movements,
-        'idle_times': idle_times
+
+        'movement_rates': movement_rates,
+
+        'idle_rates': idle_rates,
+
+        'analysis': analysis
     })

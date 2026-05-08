@@ -4,60 +4,155 @@
 
 {% block content %}
 
-<div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+<div class="container d-flex justify-content-center align-items-center"
+     style="min-height: 100vh;">
 
-    <div class="card shadow p-4 text-center" style="width: 420px; border-radius: 12px;">
+    <div class="card shadow p-4"
+         style="width: 550px; border-radius: 15px;">
 
-        <h3 class="mb-3">🧠 Your Cognitive Load</h3>
+        <!-- TITLE -->
+        <h2 class="text-center mb-3">
+            🧠 Cognitive Load Analysis
+        </h2>
 
-        <!-- LOAD COLOR (keep this as-is for visual clarity) -->
-        <h1 class="
-            {% if load == 'Low' %}text-success
-            {% elif load == 'Medium' %}text-warning
-            {% else %}text-danger
-            {% endif %}
-        ">
-            {{ load }}
-        </h1>
+        <!-- LOAD -->
+        <div class="text-center">
+
+            <h1 class="
+                {% if load == 'Low' %}
+                    text-success
+                {% elif load == 'Medium' %}
+                    text-warning
+                {% else %}
+                    text-danger
+                {% endif %}
+            ">
+                {{ load }}
+            </h1>
+
+        </div>
 
         <hr>
 
-        <!-- BASIC DATA -->
-        <p class="fs-5"><b>Errors:</b> {{ errors }}</p>
-        <p class="fs-5"><b>Time Taken:</b> {{ time }} seconds</p>
-        <p class="fs-5"><b>Accuracy:</b> {{ accuracy }}%</p>
+        <!-- BASIC METRICS -->
+        <div class="mt-3">
 
-        <!-- USER TYPE -->
-        <p class="fs-5"><b>User Type:</b> {{ user_type|title }}</p>
+            <p class="fs-5">
+                <b>👤 User Type:</b>
+                {{ user_type|title }}
+            </p>
 
-        <!-- BEHAVIOR DATA -->
-        <p class="fs-6"><b>Cursor Movements:</b> {{ movements }}</p>
-        <p class="fs-6"><b>Idle Time:</b> {{ idle_time }} sec</p>
+            <p class="fs-5">
+                <b>❌ Errors:</b>
+                {{ errors }}
+            </p>
 
-        <!-- 🧠 FEEDBACK (ALL GREEN ✅) -->
+            <p class="fs-5">
+                <b>⏱ Time Taken:</b>
+                {{ time }} sec
+            </p>
+
+            <p class="fs-5">
+                <b>🎯 Accuracy:</b>
+                {{ accuracy }}%
+            </p>
+
+        </div>
+
+        <hr>
+
+        <!-- REALISTIC BEHAVIORAL METRICS -->
+        <h4 class="mb-3 text-primary">
+            📊 Behavioral Analytics
+        </h4>
+
+        <div class="alert alert-light border">
+
+            <p class="fs-5">
+                <b>🖱 Cursor Movement Rate:</b>
+                {{ movement_rate }} moves/min
+            </p>
+
+            <p class="text-muted">
+                Measures interaction frequency and attention activity.
+            </p>
+
+            <hr>
+
+            <p class="fs-5">
+                <b>😴 Idle Rate:</b>
+                {{ idle_rate }}%
+            </p>
+
+            <p class="text-muted">
+                Represents pause duration and cognitive hesitation during the test.
+            </p>
+
+        </div>
+
+        <!-- AI ANALYSIS -->
+        <h4 class="mt-4 mb-3 text-success">
+            🤖 AI Behavioral Interpretation
+        </h4>
+
+        <div class="alert alert-success">
+
+            {{ analysis }}
+
+        </div>
+
+        <!-- LOAD FEEDBACK -->
+        <h4 class="mt-4 mb-2 text-info">
+            🧠 Cognitive Feedback
+        </h4>
+
         {% if load == "High" %}
-        <p class="text-success fw-bold">
-            High cognitive load detected. Consider taking short breaks and reducing distractions to improve performance.
-        </p>
+
+        <div class="alert alert-danger">
+
+            High cognitive load detected.
+            Performance patterns suggest increased mental effort,
+            distraction, or processing difficulty.
+
+        </div>
+
         {% elif load == "Medium" %}
-        <p class="text-success fw-bold">
-            Moderate cognitive load. Try maintaining better focus and accuracy for improved results.
-        </p>
+
+        <div class="alert alert-warning">
+
+            Moderate cognitive load observed.
+            Improved focus and reduced distractions may enhance performance.
+
+        </div>
+
         {% else %}
-        <p class="text-success fw-bold">
-            Excellent! You are performing efficiently with low cognitive load.
-        </p>
+
+        <div class="alert alert-success">
+
+            Cognitive performance appears stable,
+            balanced, and efficient.
+
+        </div>
+
         {% endif %}
 
         <!-- BUTTONS -->
-        <div class="mt-3">
-            <a href="{% url 'test' %}" class="btn btn-primary m-1">
-                Try Again
+        <div class="text-center mt-4">
+
+            <a href="{% url 'test' %}"
+               class="btn btn-primary m-1">
+
+                Take Test Again
+
             </a>
 
-            <a href="{% url 'dashboard' %}" class="btn btn-success m-1">
+            <a href="{% url 'dashboard' %}"
+               class="btn btn-success m-1">
+
                 View Dashboard
+
             </a>
+
         </div>
 
     </div>

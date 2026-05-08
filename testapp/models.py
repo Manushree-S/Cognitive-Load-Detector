@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class TestResult(models.Model):
 
-    # 🧠 User types for adaptive system
+    # 🧠 User Types
     USER_TYPES = [
         ('normal', 'Normal'),
         ('adhd', 'ADHD'),
@@ -13,26 +13,37 @@ class TestResult(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    # 👤 User category
+    # 👤 User Category
     user_type = models.CharField(
         max_length=20,
         choices=USER_TYPES,
         default='normal'
     )
 
-    # 📊 Quiz metrics
+    # 📊 Test Metrics
     time_taken = models.FloatField()
+
     errors = models.IntegerField()
+
     load_level = models.CharField(max_length=20)
 
-    # 🖱 Behavioral tracking
+    # 🖱 Raw Tracking
     cursor_movements = models.IntegerField(default=0)
+
     idle_time = models.FloatField(default=0)
+
+    # 🔥 NEW REALISTIC METRICS
+    movement_rate = models.FloatField(default=0)
+
+    idle_rate = models.FloatField(default=0)
 
     # 🕒 Timestamp
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.created_at:
-            return f"{self.user.username} ({self.user_type}) - {self.load_level} at {self.created_at.strftime('%d-%m-%Y %H:%M')}"
-        return f"{self.user.username} ({self.user_type}) - {self.load_level}"
+
+        return (
+            f"{self.user.username} - "
+            f"{self.user_type} - "
+            f"{self.load_level}"
+        )

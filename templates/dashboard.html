@@ -17,70 +17,135 @@
             font-family: 'OpenDyslexic', Arial, sans-serif;
             line-height: 1.8;
             letter-spacing: 1px;
+            background-color: #f4f6f8;
+        }
+
+        .analysis-box {
+            background: #e8f5e9;
+            border-left: 6px solid #28a745;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .card {
+            border-radius: 15px;
+        }
+
+        canvas {
+            max-height: 400px;
         }
     </style>
 </head>
 
 <body class="bg-light">
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
 
     <div class="card shadow p-4">
 
-        <h2 class="text-center mb-4">Your Test History</h2>
+        <!-- PAGE TITLE -->
+        <h2 class="text-center mb-4">
+            🧠 Your Cognitive Test History
+        </h2>
 
         <!-- TABLE -->
-        <table class="table table-bordered table-striped text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>Attempt</th>
-                    <th>Date & Time</th>
-                    <th>Time (s)</th>
-                    <th>Errors</th>
-                    <th>Load</th>
-                </tr>
-            </thead>
+        <div class="table-responsive">
 
-            <tbody>
-                {% for r in results %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
+            <table class="table table-bordered table-striped text-center align-middle">
 
-                    <!-- ✅ FIXED (THIS WAS WRONG BEFORE) -->
-                    <td>{{ r.created_at|date:"d M Y, H:i" }}</td>
+                <thead class="table-dark">
+                    <tr>
+                        <th>Attempt</th>
+                        <th>Date & Time</th>
+                        <th>Time (s)</th>
+                        <th>Errors</th>
+                        <th>Load</th>
+                    </tr>
+                </thead>
 
-                    <td>{{ r.time_taken }}</td>
-                    <td>{{ r.errors }}</td>
+                <tbody>
 
-                    <td>
-                        <span class="
-                            {% if r.load_level == 'Low' %}text-success
-                            {% elif r.load_level == 'Medium' %}text-warning
-                            {% else %}text-danger
-                            {% endif %}
-                        ">
-                            {{ r.load_level }}
-                        </span>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">No attempts yet</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% for r in results %}
+                    <tr>
 
-        <!-- 🔥 GRAPH HEADING (NEW) -->
-        <h4 class="text-center mt-4">Performance Analysis (Errors per Attempt)</h4>
+                        <td>
+                            {{ forloop.counter }}
+                        </td>
+
+                        <!-- TIMESTAMP -->
+                        <td>
+                            {{ r.created_at|date:"d M Y, H:i" }}
+                        </td>
+
+                        <td>
+                            {{ r.time_taken }}
+                        </td>
+
+                        <td>
+                            {{ r.errors }}
+                        </td>
+
+                        <td>
+                            <span class="
+                                {% if r.load_level == 'Low' %}text-success
+                                {% elif r.load_level == 'Medium' %}text-warning
+                                {% else %}text-danger
+                                {% endif %}
+                            ">
+                                <b>{{ r.load_level }}</b>
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5">
+                            No attempts yet
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- GRAPH HEADING -->
+        <h4 class="text-center mt-5 mb-3">
+            📊 Performance Analysis (Errors per Attempt)
+        </h4>
 
         <!-- GRAPH -->
-        <canvas id="errorChart" class="mt-3"></canvas>
+        <canvas id="errorChart" class="mt-2"></canvas>
+
+        <!-- 🔥 AI ANALYSIS SECTION -->
+        <div class="analysis-box mt-5">
+
+            <h4 class="mb-3">
+                📈 Weekly Cognitive Analysis
+            </h4>
+
+            <p style="font-size:17px;">
+                {{ analysis }}
+            </p>
+
+        </div>
 
         <!-- BUTTONS -->
         <div class="text-center mt-4">
-            <a href="{% url 'test' %}" class="btn btn-primary m-1">Take Test Again</a>
-            <a href="/" class="btn btn-secondary m-1">Home</a>
+
+            <a href="{% url 'test' %}" class="btn btn-primary m-1">
+                Take Test Again
+            </a>
+
+            <a href="/" class="btn btn-secondary m-1">
+                Home
+            </a>
+
         </div>
 
     </div>
@@ -88,36 +153,63 @@
 </div>
 
 <script>
+
 const ctx = document.getElementById('errorChart');
 
 new Chart(ctx, {
+
     type: 'line',
+
     data: {
+
         labels: {{ attempts|safe }},
+
         datasets: [{
+
             label: 'Errors per Attempt',
+
             data: {{ errors|safe }},
-            borderWidth: 2,
-            tension: 0.3
+
+            borderWidth: 3,
+
+            tension: 0.3,
+
+            fill: false
+
         }]
+
     },
+
     options: {
+
         responsive: true,
+
         plugins: {
+
             legend: {
                 display: true
             }
+
         },
+
         scales: {
+
             y: {
+
                 beginAtZero: true,
+
                 ticks: {
                     stepSize: 1
                 }
+
             }
+
         }
+
     }
+
 });
+
 </script>
 
 </body>
