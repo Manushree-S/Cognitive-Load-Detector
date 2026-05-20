@@ -1,96 +1,426 @@
+```html
 {% extends 'base.html' %}
 
-{% block title %}Cognitive Quiz{% endblock %}
+{% block title %}
+NeuroLearn AI Assessment
+{% endblock %}
 
 {% block content %}
 
 <style>
-    body {
-        background-color: #f4f6f8;
-        font-family: 'OpenDyslexic', Arial, sans-serif;
-        line-height: 1.8;
-        letter-spacing: 1px;
-    }
 
-    .card {
-        max-width: 700px;
-        margin: auto;
-        margin-top: 40px;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        background: white;
-    }
+body{
+    background:linear-gradient(to right,#eef4ff,#f8fbff);
+    font-family:'Segoe UI',sans-serif;
+}
 
-    .question-block {
-        display: none;
-    }
+.assessment-card{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    padding:35px;
+    border-radius:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    margin-top:40px;
+    margin-bottom:40px;
+}
 
-    .question-block.active {
-        display: block;
-    }
+.main-title{
+    text-align:center;
+    font-weight:800;
+    color:#1e293b;
+    margin-bottom:10px;
+}
+
+.tagline{
+    text-align:center;
+    color:#64748b;
+    margin-bottom:30px;
+}
+
+.subject-section{
+    display:none;
+}
+
+.subject-section.active{
+    display:block;
+}
+
+.subject-title{
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:white;
+    padding:16px;
+    border-radius:14px;
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.question-box{
+    background:#f8fbff;
+    border:1px solid #dbeafe;
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:24px;
+}
+
+.question-box h5{
+    color:#1e293b;
+    margin-bottom:18px;
+    line-height:1.6;
+}
+
+.form-check{
+    background:white;
+    border:1px solid #dbe4f0;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:14px;
+    transition:0.3s;
+}
+
+.form-check:hover{
+    background:#eef4ff;
+    transform:scale(1.01);
+}
+
+.form-check-input{
+    margin-right:10px;
+    transform:scale(1.2);
+}
+
+.form-check-label{
+    font-size:16px;
+    color:#334155;
+}
+
+.passage-box{
+    background:#eef5ff;
+    border-left:6px solid #2563eb;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+.stats-container{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.stat-box{
+    flex:1;
+    min-width:180px;
+    background:#f8fbff;
+    padding:18px;
+    border-radius:14px;
+    text-align:center;
+}
+
+.stat-title{
+    color:#64748b;
+    font-size:14px;
+}
+
+.stat-value{
+    font-size:24px;
+    font-weight:bold;
+    color:#2563eb;
+}
+
+.progress{
+    height:20px;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:30px;
+}
+
+.progress-bar{
+    transition:0.5s;
+}
+
+.webcam-box{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+#webcam{
+    border-radius:18px;
+    border:4px solid #2563eb;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+.voice-btn{
+    background:#7c3aed;
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:12px;
+    font-weight:700;
+    margin-bottom:25px;
+}
+
+.voice-btn:hover{
+    background:#6d28d9;
+}
+
+.btn-main{
+    width:100%;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:white;
+    border:none;
+    padding:16px;
+    border-radius:14px;
+    font-size:17px;
+    font-weight:700;
+}
+
+.btn-main:hover{
+    opacity:0.95;
+}
+
+.ai-box{
+    background:#f0fff4;
+    border-left:5px solid #16a34a;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:25px;
+}
+
+.timer-box{
+    text-align:center;
+    margin-bottom:20px;
+}
+
 </style>
 
-<div class="card">
+<div class="assessment-card">
 
-    <h3 class="text-center mb-3">🧠 Cognitive Quiz</h3>
+    <h1 class="main-title">
+        🧠 NeuroLearn AI
+    </h1>
 
-    <!-- Voice Toggle -->
-    <div class="text-center mb-2">
-        <button type="button" class="btn btn-info" onclick="toggleVoice()">
-            🔊 Toggle Voice
+    <p class="tagline">
+        Smart Cognitive Assessment & Learning Analysis Platform
+    </p>
+
+    <!-- Webcam -->
+
+    <div class="webcam-box">
+
+        <video
+            id="webcam"
+            autoplay
+            playsinline
+            width="320"
+            height="240"
+        ></video>
+
+        <p class="mt-2 text-muted">
+            AI Attention Monitoring Active
+        </p>
+
+    </div>
+
+    <!-- Voice -->
+
+    <div class="text-center">
+
+        <button
+            class="voice-btn"
+            type="button"
+            onclick="toggleVoice()"
+        >
+            🔊 Toggle Voice Assistant
         </button>
+
     </div>
 
     <!-- Timer -->
-    <p class="text-center">
-        Time Elapsed: <span id="timer">0</span> sec
-    </p>
 
-    <!-- Debug Display -->
-    <p class="text-center small text-muted">
-        Moves: <span id="debugMoves">0</span> |
-        Idle: <span id="debugIdle">0</span>
-    </p>
+    <div class="timer-box">
 
-    <!-- Progress -->
-    <div class="progress mb-3">
-        <div id="progressBar" class="progress-bar bg-success" style="width: 0%"></div>
+        <h5>
+            ⏱ Time :
+            <span id="timer">0</span> sec
+        </h5>
+
     </div>
 
+    <!-- Stats -->
+
+    <div class="stats-container">
+
+        <div class="stat-box">
+
+            <div class="stat-title">
+                Option Changes
+            </div>
+
+            <div
+                class="stat-value"
+                id="debugMoves"
+            >
+                0
+            </div>
+
+        </div>
+
+        <div class="stat-box">
+
+            <div class="stat-title">
+                Idle Time
+            </div>
+
+            <div
+                class="stat-value"
+                id="debugIdle"
+            >
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- AI Info -->
+
+    <div class="ai-box">
+
+        <b>
+            AI Cognitive Tracking Enabled
+        </b>
+
+        <ul>
+
+            <li>Voice-assisted assessment</li>
+
+            <li>Behavior monitoring</li>
+
+            <li>Attention analysis</li>
+
+            <li>Question interaction tracking</li>
+
+        </ul>
+
+    </div>
+
+    <!-- Progress -->
+
+    <div class="progress">
+
+        <div
+            class="progress-bar bg-success"
+            id="progressBar"
+            style="width:0%"
+        ></div>
+
+    </div>
+
+    <!-- FORM -->
+
     <form method="POST" id="quizForm">
+
         {% csrf_token %}
 
-        <input type="hidden" name="start_time" value="{{ start_time }}">
-        <input type="hidden" name="movement_count" id="movement_count">
-        <input type="hidden" name="idle_time" id="idle_time">
+        <input
+            type="hidden"
+            name="start_time"
+            value="{{ start_time }}"
+        >
 
-        {% for q in questions %}
-        <div class="question-block {% if forloop.first %}active{% endif %}">
+        <input
+            type="hidden"
+            name="movement_count"
+            id="movement_count"
+        >
 
-            <p class="question-text">
-                <b>{{ forloop.counter }}. {{ q.q }}</b>
-            </p>
+        <input
+            type="hidden"
+            name="idle_time"
+            id="idle_time"
+        >
 
-            {% for opt in q.options %}
-            <div class="form-check">
-                <input class="form-check-input"
-                       type="radio"
-                       name="q{{ forloop.parentloop.counter }}"
-                       value="{{ opt }}"
-                       required>
+        {% for subject, qs in questions.items %}
 
-                <label class="form-check-label">
-                    {{ opt }}
-                </label>
+        <div class="subject-section {% if forloop.first %}active{% endif %}">
+
+            <div class="subject-title">
+
+                <h3>
+                    📘 {{ subject }}
+                </h3>
+
             </div>
+
+            {% for q in qs %}
+
+            <div class="question-box">
+
+                {% if q.passage %}
+
+                <div class="passage-box">
+
+                    <b>
+                        Read Carefully:
+                    </b>
+
+                    <p>
+                        {{ q.passage }}
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+                <h5>
+
+                    Question {{ forloop.counter }} :
+                    {{ q.q }}
+
+                </h5>
+
+                {% for opt in q.options %}
+
+                <div class="form-check">
+
+                    <input
+                        class="form-check-input answer-option"
+                        type="radio"
+                        name="{{ subject }}_{{ forloop.parentloop.counter0 }}"
+                        value="{{ opt }}"
+                    >
+
+                    <label class="form-check-label">
+
+                        {{ opt }}
+
+                    </label>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
             {% endfor %}
 
-            <button type="button" class="btn btn-primary mt-3 w-100" onclick="nextQuestion()">
-                Next
+            <button
+                type="button"
+                class="btn-main"
+                onclick="nextSubject()"
+            >
+
+                {% if forloop.last %}
+                    Finish Assessment
+                {% else %}
+                    Next Subject
+                {% endif %}
+
             </button>
 
         </div>
+
         {% endfor %}
 
     </form>
@@ -98,132 +428,276 @@
 </div>
 
 <script>
-let current = 0;
-const questions = document.querySelectorAll(".question-block");
-const total = questions.length;
 
 /* TIMER */
-let seconds = 0;
-setInterval(() => {
-    seconds++;
-    document.getElementById("timer").innerText = seconds;
-}, 1000);
 
-/* VOICE SYSTEM */
+let seconds = 0;
+
+setInterval(()=>{
+
+    seconds++;
+
+    document.getElementById(
+        "timer"
+    ).innerText = seconds;
+
+},1000);
+
+
+/* VOICE */
+
 let voiceEnabled = true;
 
-function convertMathText(text) {
-    return text
-        .replace(/\+/g, " plus ")
-        .replace(/-/g, " minus ")
-        .replace(/\*/g, " multiplied by ")
-        .replace(/\//g, " divided by ")
-        .replace(/=/g, " equals ");
-}
+function speak(text){
 
-function numberToWord(n) {
-    const words = ["First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth","Ninth","Tenth"];
-    return words[n - 1] || n;
-}
-
-function speak(text) {
-    if (!voiceEnabled) return;
+    if(!voiceEnabled) return;
 
     window.speechSynthesis.cancel();
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.rate = 0.85;
+
+    const speech =
+    new SpeechSynthesisUtterance(text);
+
+    speech.rate = 0.9;
+
+    speech.pitch = 1;
+
+    speech.volume = 1;
 
     window.speechSynthesis.speak(speech);
 }
 
-function toggleVoice() {
+function toggleVoice(){
+
     voiceEnabled = !voiceEnabled;
-    alert(voiceEnabled ? "Voice ON" : "Voice OFF");
+
+    alert(
+        voiceEnabled
+        ? "Voice Enabled"
+        : "Voice Disabled"
+    );
 }
 
-function speakQuestion(index) {
-    const qBlock = questions[index];
 
-    let questionText = qBlock.querySelector(".question-text").innerText;
+/* READ CURRENT QUESTION */
 
-    let parts = questionText.split(".");
-    let qNumber = parseInt(parts[0]);
-    let actualQuestion = parts.slice(1).join(".").trim();
+function readCurrentQuestion(questionBox){
 
-    let questionWord = numberToWord(qNumber);
-    actualQuestion = convertMathText(actualQuestion);
+    if(!voiceEnabled) return;
 
-    let optionsText = "";
-    const options = qBlock.querySelectorAll("label");
+    let text = "";
 
-    options.forEach(opt => {
-        optionsText += convertMathText(opt.innerText) + ", ";
+    const question =
+    questionBox.querySelector("h5");
+
+    text += question.innerText + ". ";
+
+    const options =
+    questionBox.querySelectorAll(
+        ".form-check-label"
+    );
+
+    options.forEach((opt,index)=>{
+
+        text +=
+        "Option " +
+        (index + 1) +
+        ". " +
+        opt.innerText +
+        ". ";
+
     });
 
-    speak(questionWord + " question. " + actualQuestion + ". Options are: " + optionsText);
+    speak(text);
 }
 
-/* 🔥 CURSOR + IDLE TRACKING (FINAL FIX) */
-let cursorMoves = 0;
+
+/* WEBCAM */
+
+navigator.mediaDevices
+.getUserMedia({
+    video:true
+})
+.then(stream=>{
+
+    document.getElementById(
+        "webcam"
+    ).srcObject = stream;
+
+});
+
+
+/* OPTION TRACKING */
+
+let optionChanges = 0;
+
 let idleSeconds = 0;
-let lastActivityTime = Date.now();
 
-function registerActivity() {
-    cursorMoves++;
-    lastActivityTime = Date.now();
+let lastActivity = Date.now();
 
-    document.getElementById("debugMoves").innerText = cursorMoves;
-}
+const allQuestions =
+document.querySelectorAll(
+    ".question-box"
+);
 
-// Track ALL activity
-document.addEventListener("mousemove", registerActivity);
-document.addEventListener("click", registerActivity);
-document.addEventListener("keydown", registerActivity);
-document.addEventListener("scroll", registerActivity);
+allQuestions.forEach((questionBox)=>{
 
-// Idle detection
-setInterval(() => {
-    let now = Date.now();
+    const radios =
+    questionBox.querySelectorAll(
+        ".answer-option"
+    );
 
-    if (now - lastActivityTime > 2000) {
+    radios.forEach((radio)=>{
+
+        radio.addEventListener(
+            "change",
+            ()=>{
+
+                optionChanges++;
+
+                document.getElementById(
+                    "debugMoves"
+                ).innerText =
+                optionChanges;
+
+                lastActivity = Date.now();
+
+                const nextQuestion =
+                questionBox.nextElementSibling;
+
+                if(
+                    nextQuestion &&
+                    nextQuestion.classList.contains(
+                        "question-box"
+                    )
+                ){
+
+                    setTimeout(()=>{
+
+                        readCurrentQuestion(
+                            nextQuestion
+                        );
+
+                    },700);
+
+                }
+
+            }
+        );
+
+    });
+
+});
+
+
+/* IDLE TRACKING */
+
+setInterval(()=>{
+
+    if(Date.now() - lastActivity > 5000){
+
         idleSeconds++;
-        document.getElementById("debugIdle").innerText = idleSeconds;
-    }
-}, 1000);
 
-/* NEXT QUESTION */
-function nextQuestion() {
-    const selected = questions[current].querySelector("input[type=radio]:checked");
-
-    if (!selected) {
-        alert("Please select an option");
-        return;
+        document.getElementById(
+            "debugIdle"
+        ).innerText =
+        idleSeconds;
     }
 
-    questions[current].classList.remove("active");
-    current++;
+},1000);
 
-    let progress = (current / total) * 100;
-    document.getElementById("progressBar").style.width = progress + "%";
 
-    if (current < total) {
-        questions[current].classList.add("active");
-        speakQuestion(current);
-    } else {
-        // 🔥 IMPORTANT FIX
-        document.getElementById("movement_count").value = cursorMoves;
-        document.getElementById("idle_time").value = idleSeconds;
+/* SUBJECT NAVIGATION */
 
-        console.log("FINAL DATA:", cursorMoves, idleSeconds);
+const sections =
+document.querySelectorAll(
+    ".subject-section"
+);
 
-        document.getElementById("quizForm").submit();
+let currentSection = 0;
+
+function nextSubject(){
+
+    sections[currentSection]
+    .classList.remove("active");
+
+    currentSection++;
+
+    let progress =
+    (currentSection / sections.length) * 100;
+
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+    progress + "%";
+
+    if(currentSection < sections.length){
+
+        sections[currentSection]
+        .classList.add("active");
+
+        const firstQuestion =
+        sections[currentSection]
+        .querySelector(".question-box");
+
+        setTimeout(()=>{
+
+            readCurrentQuestion(
+                firstQuestion
+            );
+
+        },800);
+
+    }
+
+    else{
+
+        saveBehaviorData();
+
+        document.getElementById(
+            "quizForm"
+        ).submit();
     }
 }
+
+
+/* SAVE */
+
+function saveBehaviorData(){
+
+    document.getElementById(
+        "movement_count"
+    ).value = optionChanges;
+
+    document.getElementById(
+        "idle_time"
+    ).value = idleSeconds;
+}
+
 
 /* START */
-window.onload = () => {
-    speakQuestion(0);
+
+window.onload = ()=>{
+
+    speak(
+        "Welcome to NeuroLearn AI Assessment"
+    );
+
+    const firstQuestion =
+    document.querySelector(
+        ".question-box"
+    );
+
+    setTimeout(()=>{
+
+        readCurrentQuestion(
+            firstQuestion
+        );
+
+    },2000);
+
 };
+
 </script>
 
-{% endblock %};
+{% endblock %}
+```
