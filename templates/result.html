@@ -1,162 +1,254 @@
 {% extends 'base.html' %}
 
-{% block title %}Result{% endblock %}
+{% block title %}Assessment Result{% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="container d-flex justify-content-center align-items-center"
-     style="min-height: 100vh;">
+<style>
+    .result-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        padding: 28px;
+        margin-bottom: 22px;
+    }
 
-    <div class="card shadow p-4"
-         style="width: 550px; border-radius: 15px;">
+    .result-header h1 {
+        margin: 0;
+        font-size: clamp(1.9rem, 4vw, 3.5rem);
+        font-weight: 900;
+    }
 
-        <!-- TITLE -->
-        <h2 class="text-center mb-3">
-            🧠 Cognitive Load Analysis
-        </h2>
+    .load-pill {
+        min-width: 150px;
+        padding: 16px 20px;
+        border-radius: 8px;
+        text-align: center;
+        color: #ffffff;
+        background: var(--brand);
+        font-weight: 900;
+    }
 
-        <!-- LOAD -->
-        <div class="text-center">
+    .load-pill.High {
+        background: var(--danger);
+    }
 
-            <h1 class="
-                {% if load == 'Low' %}
-                    text-success
-                {% elif load == 'Medium' %}
-                    text-warning
-                {% else %}
-                    text-danger
-                {% endif %}
-            ">
-                {{ load }}
-            </h1>
+    .load-pill.Medium {
+        background: var(--warning);
+    }
 
-        </div>
+    .load-pill.Low {
+        background: var(--accent);
+    }
 
-        <hr>
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
 
-        <!-- BASIC METRICS -->
-        <div class="mt-3">
+    .result-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+        gap: 22px;
+        align-items: start;
+    }
 
-            <p class="fs-5">
-                <b>👤 User Type:</b>
-                {{ user_type|title }}
-            </p>
+    .panel {
+        padding: 24px;
+    }
 
-            <p class="fs-5">
-                <b>❌ Errors:</b>
-                {{ errors }}
-            </p>
+    .positive-panel {
+        border-color: #bfe7d9;
+        background: #eef9f5;
+    }
 
-            <p class="fs-5">
-                <b>⏱ Time Taken:</b>
-                {{ time }} sec
-            </p>
+    .positive-panel h2 {
+        color: var(--accent);
+    }
 
-            <p class="fs-5">
-                <b>🎯 Accuracy:</b>
-                {{ accuracy }}%
-            </p>
+    .graph-subtitle {
+        margin-top: -8px;
+        margin-bottom: 16px;
+        color: var(--muted);
+        font-weight: 700;
+    }
 
-        </div>
+    .subject-score {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+    }
 
-        <hr>
+    .subject-score:last-child {
+        border-bottom: 0;
+    }
 
-        <!-- REALISTIC BEHAVIORAL METRICS -->
-        <h4 class="mb-3 text-primary">
-            📊 Behavioral Analytics
-        </h4>
+    canvas {
+        width: 100% !important;
+        max-height: 360px;
+    }
 
-        <div class="alert alert-light border">
+    @media (max-width: 900px) {
+        .result-header,
+        .result-layout,
+        .metric-grid {
+            grid-template-columns: 1fr;
+        }
 
-            <p class="fs-5">
-                <b>🖱 Cursor Movement Rate:</b>
-                {{ movement_rate }} moves/min
-            </p>
+        .load-pill {
+            width: 100%;
+        }
+    }
+</style>
 
-            <p class="text-muted">
-                Measures interaction frequency and attention activity.
-            </p>
+<section class="surface result-header">
+    <div>
+        <p class="text-uppercase fw-bold mb-2" style="color: var(--brand);">Step 3</p>
+        <h1>AI Analysis Result</h1>
+        <p class="text-muted mb-0">
+            Student: <strong>{{ student_name }}</strong> &nbsp; Grade band: <strong>{{ grade_level }}</strong>
+        </p>
+    </div>
+    <div class="load-pill {{ load }}">
+        {{ load }} Load
+    </div>
+</section>
 
-            <hr>
+<section class="metric-grid">
+    <div class="metric">
+        <div class="metric-label">Accuracy</div>
+        <p class="metric-value">{{ accuracy }}%</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Attention score</div>
+        <p class="metric-value">{{ attention_score }}</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Time taken</div>
+        <p class="metric-value">{{ time_taken }}s</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Random move rate</div>
+        <p class="metric-value">{{ random_movement_rate }}/s</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Option switch rate</div>
+        <p class="metric-value">{{ option_switch_rate }}/q</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Total movement rate</div>
+        <p class="metric-value">{{ movement_rate }}/s</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Idle rate</div>
+        <p class="metric-value">{{ idle_rate }}%</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Random moves</div>
+        <p class="metric-value">{{ random_movements }}</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Option switches</div>
+        <p class="metric-value">{{ option_switches }}</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Window switches</div>
+        <p class="metric-value">{{ focus_events }}</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Face visibility cues</div>
+        <p class="metric-value">{{ face_missing_events }}</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Support signals</div>
+        <p class="metric-value">{{ reading_support_events }}</p>
+    </div>
+</section>
 
-            <p class="fs-5">
-                <b>😴 Idle Rate:</b>
-                {{ idle_rate }}%
-            </p>
-
-            <p class="text-muted">
-                Represents pause duration and cognitive hesitation during the test.
-            </p>
-
-        </div>
-
-        <!-- AI ANALYSIS -->
-        <h4 class="mt-4 mb-3 text-success">
-            🤖 AI Behavioral Interpretation
-        </h4>
-
-        <div class="alert alert-success">
-
-            {{ analysis }}
-
-        </div>
-
-        <!-- LOAD FEEDBACK -->
-        <h4 class="mt-4 mb-2 text-info">
-            🧠 Cognitive Feedback
-        </h4>
-
-        {% if load == "High" %}
-
-        <div class="alert alert-danger">
-
-            High cognitive load detected.
-            Performance patterns suggest increased mental effort,
-            distraction, or processing difficulty.
-
-        </div>
-
-        {% elif load == "Medium" %}
-
-        <div class="alert alert-warning">
-
-            Moderate cognitive load observed.
-            Improved focus and reduced distractions may enhance performance.
-
-        </div>
-
-        {% else %}
-
-        <div class="alert alert-success">
-
-            Cognitive performance appears stable,
-            balanced, and efficient.
-
-        </div>
-
-        {% endif %}
-
-        <!-- BUTTONS -->
-        <div class="text-center mt-4">
-
-            <a href="{% url 'test' %}"
-               class="btn btn-primary m-1">
-
-                Take Test Again
-
-            </a>
-
-            <a href="{% url 'dashboard' %}"
-               class="btn btn-success m-1">
-
-                View Dashboard
-
-            </a>
-
-        </div>
-
+<section class="result-layout">
+    <div class="surface panel">
+        <h2 class="h4 fw-bold mb-1">Cognitive Load Metrics Graph</h2>
+        <p class="graph-subtitle">Accuracy, attention, movement behavior, idle percentage, and window switches</p>
+        <canvas id="resultChart"></canvas>
     </div>
 
+    <aside class="surface panel">
+        <h2 class="h4 fw-bold mb-3">Subject Performance</h2>
+        {% for subject, score in subject_scores.items %}
+            <div class="subject-score">
+                <strong>{{ subject }}</strong>
+                <span>{{ score }}%</span>
+            </div>
+        {% endfor %}
+    </aside>
+</section>
+
+<section class="result-layout mt-4">
+    <div class="surface panel">
+        <h2 class="h4 fw-bold mb-3">Cognitive Analysis</h2>
+        <p class="mb-0">{{ analysis }}</p>
+    </div>
+
+    <aside class="surface panel positive-panel">
+        <h2 class="h4 fw-bold mb-3">Grade-based Feedback</h2>
+        <p class="mb-0">{{ feedback }}</p>
+    </aside>
+</section>
+
+<section class="surface panel positive-panel mt-4">
+    <h2 class="h4 fw-bold mb-3">Graph Analysis</h2>
+    <p class="mb-0">{{ graph_analysis }}</p>
+</section>
+
+<section class="surface panel mt-4">
+    <h2 class="h4 fw-bold mb-3">Camera Support Insight</h2>
+    <p class="mb-0">{{ camera_analysis }}</p>
+</section>
+
+<div class="d-flex flex-wrap gap-2 mt-4">
+    <a class="btn btn-primary" href="{% url 'student_details' %}">Run New Assessment</a>
+    <a class="btn btn-outline-primary" href="{% url 'dashboard' %}">View Dashboard</a>
 </div>
 
+<script>
+    const ctx = document.getElementById("resultChart");
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Accuracy", "Attention", "Random move rate", "Option switch rate", "Idle %", "Window switches", "Face cues", "Support signals"],
+            datasets: [{
+                label: "Assessment Metrics",
+                data: [
+                    {{ accuracy|default:0 }},
+                    {{ attention_score|default:0 }},
+                    {{ random_movement_rate|default:0 }},
+                    {{ option_switch_rate|default:0 }},
+                    {{ idle_rate|default:0 }},
+                    {{ focus_events|default:0 }},
+                    {{ face_missing_events|default:0 }},
+                    {{ reading_support_events|default:0 }}
+                ],
+                backgroundColor: ["#2457c5", "#15906b", "#c97914", "#8c6dd7", "#c83f49", "#5b6680", "#00a2c7", "#7a9a01"],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 100
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

@@ -1,703 +1,711 @@
-```html
 {% extends 'base.html' %}
 
-{% block title %}
-NeuroLearn AI Assessment
-{% endblock %}
+{% block title %}Cognitive Test{% endblock %}
 
 {% block content %}
-
 <style>
+    .test-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+        gap: 20px;
+        align-items: stretch;
+        margin-bottom: 22px;
+    }
 
-body{
-    background:linear-gradient(to right,#eef4ff,#f8fbff);
-    font-family:'Segoe UI',sans-serif;
-}
+    .test-title,
+    .monitor {
+        padding: 24px;
+    }
 
-.assessment-card{
-    max-width:1100px;
-    margin:auto;
-    background:white;
-    padding:35px;
-    border-radius:24px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.08);
-    margin-top:40px;
-    margin-bottom:40px;
-}
+    .test-title h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 4vw, 3.2rem);
+        font-weight: 900;
+    }
 
-.main-title{
-    text-align:center;
-    font-weight:800;
-    color:#1e293b;
-    margin-bottom:10px;
-}
+    .live-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+    }
 
-.tagline{
-    text-align:center;
-    color:#64748b;
-    margin-bottom:30px;
-}
+    .assist-panel {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8fbff;
+    }
 
-.subject-section{
-    display:none;
-}
+    .voice-switch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+    }
 
-.subject-section.active{
-    display:block;
-}
+    .voice-switch label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin: 0;
+        font-weight: 900;
+    }
 
-.subject-title{
-    background:linear-gradient(135deg,#2563eb,#7c3aed);
-    color:white;
-    padding:16px;
-    border-radius:14px;
-    text-align:center;
-    margin-bottom:30px;
-}
+    .voice-switch input {
+        width: 46px;
+        height: 24px;
+        cursor: pointer;
+    }
 
-.question-box{
-    background:#f8fbff;
-    border:1px solid #dbeafe;
-    border-radius:18px;
-    padding:24px;
-    margin-bottom:24px;
-}
+    .voice-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
 
-.question-box h5{
-    color:#1e293b;
-    margin-bottom:18px;
-    line-height:1.6;
-}
+    .camera-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #0e1c30;
+    }
 
-.form-check{
-    background:white;
-    border:1px solid #dbe4f0;
-    padding:14px;
-    border-radius:12px;
-    margin-bottom:14px;
-    transition:0.3s;
-}
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+        background: #0e1c30;
+        display: block;
+    }
 
-.form-check:hover{
-    background:#eef4ff;
-    transform:scale(1.01);
-}
+    .camera-placeholder {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        color: #dbe7ff;
+        text-align: center;
+        font-weight: 800;
+        background: #0e1c30;
+    }
 
-.form-check-input{
-    margin-right:10px;
-    transform:scale(1.2);
-}
+    .camera-status {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+    }
 
-.form-check-label{
-    font-size:16px;
-    color:#334155;
-}
+    .camera-insights {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+    }
 
-.passage-box{
-    background:#eef5ff;
-    border-left:6px solid #2563eb;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:20px;
-}
+    .camera-chip {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 800;
+    }
 
-.stats-container{
-    display:flex;
-    gap:15px;
-    flex-wrap:wrap;
-    margin-bottom:25px;
-}
+    .camera-chip.good {
+        border-color: #bfe7d9;
+        color: var(--accent);
+        background: #eef9f5;
+    }
 
-.stat-box{
-    flex:1;
-    min-width:180px;
-    background:#f8fbff;
-    padding:18px;
-    border-radius:14px;
-    text-align:center;
-}
+    .camera-chip.warn {
+        border-color: #f1d6a6;
+        color: #9a5c0f;
+        background: #fff7e9;
+    }
 
-.stat-title{
-    color:#64748b;
-    font-size:14px;
-}
+    .support-check {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+    }
 
-.stat-value{
-    font-size:24px;
-    font-weight:bold;
-    color:#2563eb;
-}
+    .support-check p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 800;
+    }
 
-.progress{
-    height:20px;
-    border-radius:20px;
-    overflow:hidden;
-    margin-bottom:30px;
-}
+    .support-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 
-.progress-bar{
-    transition:0.5s;
-}
+    .camera-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+    }
 
-.webcam-box{
-    text-align:center;
-    margin-bottom:25px;
-}
+    .distraction-alert {
+        display: none;
+        margin-bottom: 18px;
+        padding: 16px 18px;
+        border: 1px solid #f1d6a6;
+        border-radius: 8px;
+        color: #7a4400;
+        background: #fff7e9;
+        font-weight: 900;
+    }
 
-#webcam{
-    border-radius:18px;
-    border:4px solid #2563eb;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
-}
+    .distraction-alert.show {
+        display: block;
+    }
 
-.voice-btn{
-    background:#7c3aed;
-    color:white;
-    border:none;
-    padding:12px 24px;
-    border-radius:12px;
-    font-weight:700;
-    margin-bottom:25px;
-}
+    .subject-section {
+        margin-top: 22px;
+    }
 
-.voice-btn:hover{
-    background:#6d28d9;
-}
+    .subject-title {
+        margin: 0 0 12px;
+        color: var(--brand);
+        font-size: 1.35rem;
+        font-weight: 900;
+    }
 
-.btn-main{
-    width:100%;
-    background:linear-gradient(135deg,#2563eb,#7c3aed);
-    color:white;
-    border:none;
-    padding:16px;
-    border-radius:14px;
-    font-size:17px;
-    font-weight:700;
-}
+    .question-card {
+        padding: 22px;
+        margin-bottom: 14px;
+    }
 
-.btn-main:hover{
-    opacity:0.95;
-}
+    .question-card:focus {
+        outline: 3px solid rgba(36, 87, 197, 0.3);
+        outline-offset: 3px;
+    }
 
-.ai-box{
-    background:#f0fff4;
-    border-left:5px solid #16a34a;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:25px;
-}
+    .question-topline {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
 
-.timer-box{
-    text-align:center;
-    margin-bottom:20px;
-}
+    .question-card h3 {
+        margin-bottom: 0;
+        font-size: 1.1rem;
+        font-weight: 900;
+    }
 
+    .read-question {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .option-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .option {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        cursor: pointer;
+    }
+
+    .option:hover {
+        border-color: var(--brand);
+    }
+
+    .voice-note {
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+
+    .submit-row {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        padding: 16px 0 0;
+        background: linear-gradient(180deg, rgba(243, 247, 251, 0), var(--soft) 30%);
+    }
+
+    @media (max-width: 900px) {
+        .test-header,
+        .live-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .question-topline,
+        .voice-switch {
+            display: grid;
+        }
+
+        .read-question {
+            width: 100%;
+        }
+    }
 </style>
 
-<div class="assessment-card">
+<div class="distraction-alert" id="distraction_alert" role="alert" aria-live="polite"></div>
 
-    <h1 class="main-title">
-        🧠 NeuroLearn AI
-    </h1>
-
-    <p class="tagline">
-        Smart Cognitive Assessment & Learning Analysis Platform
-    </p>
-
-    <!-- Webcam -->
-
-    <div class="webcam-box">
-
-        <video
-            id="webcam"
-            autoplay
-            playsinline
-            width="320"
-            height="240"
-        ></video>
-
-        <p class="mt-2 text-muted">
-            AI Attention Monitoring Active
+<section class="test-header">
+    <div class="surface test-title">
+        <p class="text-uppercase fw-bold mb-2" style="color: var(--brand);">Step 2</p>
+        <h1>Grade-wise Cognitive Test</h1>
+        <p class="text-muted mb-0">
+            Student: <strong>{{ student_name }}</strong> &nbsp; Grade band: <strong>{{ grade_level }}</strong>
         </p>
 
-    </div>
-
-    <!-- Voice -->
-
-    <div class="text-center">
-
-        <button
-            class="voice-btn"
-            type="button"
-            onclick="toggleVoice()"
-        >
-            🔊 Toggle Voice Assistant
-        </button>
-
-    </div>
-
-    <!-- Timer -->
-
-    <div class="timer-box">
-
-        <h5>
-            ⏱ Time :
-            <span id="timer">0</span> sec
-        </h5>
-
-    </div>
-
-    <!-- Stats -->
-
-    <div class="stats-container">
-
-        <div class="stat-box">
-
-            <div class="stat-title">
-                Option Changes
+        <div class="live-grid">
+            <div class="metric">
+                <div class="metric-label">Time</div>
+                <p class="metric-value"><span id="timer">0</span>s</p>
             </div>
-
-            <div
-                class="stat-value"
-                id="debugMoves"
-            >
-                0
+            <div class="metric">
+                <div class="metric-label">Random moves</div>
+                <p class="metric-value" id="random_move_display">0</p>
             </div>
-
+            <div class="metric">
+                <div class="metric-label">Option switches</div>
+                <p class="metric-value" id="option_switch_display">0</p>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Idle</div>
+                <p class="metric-value"><span id="idle_display">0</span>s</p>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Window switches</div>
+                <p class="metric-value" id="focus_switch_display">0</p>
+            </div>
         </div>
 
-        <div class="stat-box">
-
-            <div class="stat-title">
-                Idle Time
+        <div class="assist-panel" aria-label="Voice assistance controls">
+            <div class="voice-switch">
+                <label for="voice_toggle">
+                    <input type="checkbox" id="voice_toggle">
+                    Voice assistance
+                </label>
+                <span class="voice-note" id="voice_status">Off</span>
             </div>
-
-            <div
-                class="stat-value"
-                id="debugIdle"
-            >
-                0
+            <div class="voice-actions">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="read_page" disabled>Read Instructions</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="stop_voice" disabled>Stop Voice</button>
             </div>
-
         </div>
-
     </div>
 
-    <!-- AI Info -->
-
-    <div class="ai-box">
-
-        <b>
-            AI Cognitive Tracking Enabled
-        </b>
-
-        <ul>
-
-            <li>Voice-assisted assessment</li>
-
-            <li>Behavior monitoring</li>
-
-            <li>Attention analysis</li>
-
-            <li>Question interaction tracking</li>
-
-        </ul>
-
-    </div>
-
-    <!-- Progress -->
-
-    <div class="progress">
-
-        <div
-            class="progress-bar bg-success"
-            id="progressBar"
-            style="width:0%"
-        ></div>
-
-    </div>
-
-    <!-- FORM -->
-
-    <form method="POST" id="quizForm">
-
-        {% csrf_token %}
-
-        <input
-            type="hidden"
-            name="start_time"
-            value="{{ start_time }}"
-        >
-
-        <input
-            type="hidden"
-            name="movement_count"
-            id="movement_count"
-        >
-
-        <input
-            type="hidden"
-            name="idle_time"
-            id="idle_time"
-        >
-
-        {% for subject, qs in questions.items %}
-
-        <div class="subject-section {% if forloop.first %}active{% endif %}">
-
-            <div class="subject-title">
-
-                <h3>
-                    📘 {{ subject }}
-                </h3>
-
+    <aside class="surface monitor">
+        <h2 class="h5 fw-bold">Camera Support</h2>
+        <div class="camera-frame">
+            <video id="video" autoplay muted playsinline></video>
+            <div class="camera-placeholder" id="camera_placeholder">
+                Camera preview will appear here after access is allowed.
             </div>
+        </div>
+        <div class="camera-status" id="camera_status">Requesting camera access...</div>
+        <div class="camera-actions">
+            <button type="button" class="btn btn-sm btn-primary" id="start_camera">Start Camera</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="retry_camera">Retry</button>
+        </div>
+        <div class="camera-insights">
+            <div class="camera-chip" id="face_status">Face visibility: waiting</div>
+            <div class="camera-chip" id="reading_support_status">Reading support: no concern selected</div>
+        </div>
+        <div class="support-check" aria-label="Student support check">
+            <p>How does this feel right now?</p>
+            <div class="support-buttons">
+                <button type="button" class="btn btn-sm btn-outline-primary support-option" data-support="comfortable">I am okay</button>
+                <button type="button" class="btn btn-sm btn-outline-primary support-option" data-support="need_break">I need a break</button>
+                <button type="button" class="btn btn-sm btn-outline-primary support-option" data-support="reading_hard">Reading feels hard</button>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<form method="POST" id="test_form">
+    {% csrf_token %}
+    <input type="hidden" name="start_time" value="{{ start_time }}">
+    <input type="hidden" name="movement_count" id="movement_count" value="0">
+    <input type="hidden" name="random_movement_count" id="random_movement_count" value="0">
+    <input type="hidden" name="option_switch_count" id="option_switch_count" value="0">
+    <input type="hidden" name="idle_time" id="idle_time" value="0">
+    <input type="hidden" name="focus_events" id="focus_events" value="0">
+    <input type="hidden" name="face_missing_events" id="face_missing_events" value="0">
+    <input type="hidden" name="reading_support_events" id="reading_support_events" value="0">
+    <input type="hidden" name="support_signal" id="support_signal" value="comfortable">
+
+    {% for subject, qs in questions.items %}
+        <section class="subject-section">
+            <h2 class="subject-title">{{ subject }}</h2>
 
             {% for q in qs %}
-
-            <div class="question-box">
-
-                {% if q.passage %}
-
-                <div class="passage-box">
-
-                    <b>
-                        Read Carefully:
-                    </b>
-
-                    <p>
-                        {{ q.passage }}
-                    </p>
-
-                </div>
-
-                {% endif %}
-
-                <h5>
-
-                    Question {{ forloop.counter }} :
-                    {{ q.q }}
-
-                </h5>
-
-                {% for opt in q.options %}
-
-                <div class="form-check">
-
-                    <input
-                        class="form-check-input answer-option"
-                        type="radio"
-                        name="{{ subject }}_{{ forloop.parentloop.counter0 }}"
-                        value="{{ opt }}"
-                    >
-
-                    <label class="form-check-label">
-
-                        {{ opt }}
-
-                    </label>
-
-                </div>
-
-                {% endfor %}
-
-            </div>
-
+                <article class="surface question-card" tabindex="0">
+                    <div class="question-topline">
+                        <h3 class="question-title">Question {{ forloop.counter }}: {{ q.q }}</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary read-question" disabled>Read Question</button>
+                    </div>
+                    <div class="option-list">
+                        {% for option in q.options %}
+                            <label class="option">
+                                <input
+                                    type="radio"
+                                    name="{{ subject }}_{{ forloop.parentloop.counter0 }}"
+                                    value="{{ option }}"
+                                    required
+                                >
+                                <span class="option-text">{{ option }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </article>
             {% endfor %}
+        </section>
+    {% endfor %}
 
-            <button
-                type="button"
-                class="btn-main"
-                onclick="nextSubject()"
-            >
-
-                {% if forloop.last %}
-                    Finish Assessment
-                {% else %}
-                    Next Subject
-                {% endif %}
-
-            </button>
-
-        </div>
-
-        {% endfor %}
-
-    </form>
-
-</div>
+    <div class="submit-row">
+        <button type="submit" class="btn btn-primary btn-lg w-100">Submit Assessment</button>
+    </div>
+</form>
 
 <script>
+    const video = document.getElementById("video");
+    const cameraStatus = document.getElementById("camera_status");
+    const cameraPlaceholder = document.getElementById("camera_placeholder");
+    const startCameraButton = document.getElementById("start_camera");
+    const retryCameraButton = document.getElementById("retry_camera");
+    const distractionAlert = document.getElementById("distraction_alert");
+    const faceStatus = document.getElementById("face_status");
+    const readingSupportStatus = document.getElementById("reading_support_status");
+    let faceMissingEvents = 0;
+    let readingSupportEvents = 0;
+    let supportSignal = "comfortable";
+    let faceDetector = null;
+    let lastFaceSeenAt = Date.now();
 
-/* TIMER */
+    if ("FaceDetector" in window) {
+        faceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+    }
 
-let seconds = 0;
+    function showDistractionAlert(message) {
+        distractionAlert.innerText = message;
+        distractionAlert.classList.add("show");
+        window.clearTimeout(showDistractionAlert.hideTimer);
+        showDistractionAlert.hideTimer = window.setTimeout(function() {
+            distractionAlert.classList.remove("show");
+        }, 6000);
+    }
 
-setInterval(()=>{
+    function stopCameraStream() {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(function(track) {
+                track.stop();
+            });
+            video.srcObject = null;
+        }
+    }
 
-    seconds++;
+    function startCamera() {
+        if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+            cameraStatus.innerText = "Camera not supported in this browser.";
+            cameraStatus.classList.add("warn");
+            showDistractionAlert("Camera is not available in this browser. Tracking will continue without webcam cues.");
+            return;
+        }
 
-    document.getElementById(
-        "timer"
-    ).innerText = seconds;
+        stopCameraStream();
+        cameraPlaceholder.style.display = "grid";
+        cameraStatus.innerText = "Requesting camera access...";
+        cameraStatus.classList.remove("good", "warn");
 
-},1000);
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+                facingMode: "user"
+            },
+            audio: false
+        })
+            .then(function(stream) {
+                video.srcObject = stream;
+                return video.play();
+            })
+            .then(function() {
+                cameraPlaceholder.style.display = "none";
+                cameraStatus.innerText = "Camera preview active";
+                cameraStatus.classList.add("good");
+                lastFaceSeenAt = Date.now();
 
-
-/* VOICE */
-
-let voiceEnabled = true;
-
-function speak(text){
-
-    if(!voiceEnabled) return;
-
-    window.speechSynthesis.cancel();
-
-    const speech =
-    new SpeechSynthesisUtterance(text);
-
-    speech.rate = 0.9;
-
-    speech.pitch = 1;
-
-    speech.volume = 1;
-
-    window.speechSynthesis.speak(speech);
-}
-
-function toggleVoice(){
-
-    voiceEnabled = !voiceEnabled;
-
-    alert(
-        voiceEnabled
-        ? "Voice Enabled"
-        : "Voice Disabled"
-    );
-}
-
-
-/* READ CURRENT QUESTION */
-
-function readCurrentQuestion(questionBox){
-
-    if(!voiceEnabled) return;
-
-    let text = "";
-
-    const question =
-    questionBox.querySelector("h5");
-
-    text += question.innerText + ". ";
-
-    const options =
-    questionBox.querySelectorAll(
-        ".form-check-label"
-    );
-
-    options.forEach((opt,index)=>{
-
-        text +=
-        "Option " +
-        (index + 1) +
-        ". " +
-        opt.innerText +
-        ". ";
-
-    });
-
-    speak(text);
-}
-
-
-/* WEBCAM */
-
-navigator.mediaDevices
-.getUserMedia({
-    video:true
-})
-.then(stream=>{
-
-    document.getElementById(
-        "webcam"
-    ).srcObject = stream;
-
-});
-
-
-/* OPTION TRACKING */
-
-let optionChanges = 0;
-
-let idleSeconds = 0;
-
-let lastActivity = Date.now();
-
-const allQuestions =
-document.querySelectorAll(
-    ".question-box"
-);
-
-allQuestions.forEach((questionBox)=>{
-
-    const radios =
-    questionBox.querySelectorAll(
-        ".answer-option"
-    );
-
-    radios.forEach((radio)=>{
-
-        radio.addEventListener(
-            "change",
-            ()=>{
-
-                optionChanges++;
-
-                document.getElementById(
-                    "debugMoves"
-                ).innerText =
-                optionChanges;
-
-                lastActivity = Date.now();
-
-                const nextQuestion =
-                questionBox.nextElementSibling;
-
-                if(
-                    nextQuestion &&
-                    nextQuestion.classList.contains(
-                        "question-box"
-                    )
-                ){
-
-                    setTimeout(()=>{
-
-                        readCurrentQuestion(
-                            nextQuestion
-                        );
-
-                    },700);
-
+                if (faceDetector) {
+                    window.setTimeout(scanFaceVisibility, 900);
+                } else {
+                    faceStatus.innerText = "Face visibility: preview active, face check not supported";
+                    faceStatus.classList.add("good");
+                    faceStatus.classList.remove("warn");
                 }
+            })
+            .catch(function(error) {
+                cameraPlaceholder.style.display = "grid";
+                cameraStatus.innerText = "Camera unavailable. Click Start Camera and allow permission.";
+                cameraStatus.classList.add("warn");
+                showDistractionAlert("Camera preview is not visible. Please allow camera permission or click Retry.");
+                console.warn("Camera error:", error);
+            });
+    }
 
+    startCameraButton.addEventListener("click", startCamera);
+    retryCameraButton.addEventListener("click", startCamera);
+    startCamera();
+
+    function updateCameraFields() {
+        document.getElementById("face_missing_events").value = faceMissingEvents;
+        document.getElementById("reading_support_events").value = readingSupportEvents;
+        document.getElementById("support_signal").value = supportSignal;
+    }
+
+    function scanFaceVisibility() {
+        if (!faceDetector || video.readyState < 2) {
+            window.setTimeout(scanFaceVisibility, 1500);
+            return;
+        }
+
+        faceDetector.detect(video)
+            .then(function(faces) {
+                if (faces.length > 0) {
+                    lastFaceSeenAt = Date.now();
+                    faceStatus.innerText = "Face visibility: learner visible";
+                    faceStatus.classList.add("good");
+                    faceStatus.classList.remove("warn");
+                } else if (Date.now() - lastFaceSeenAt > 4000) {
+                    faceMissingEvents += 1;
+                    faceStatus.innerText = "Face visibility: not visible for a few seconds";
+                    faceStatus.classList.add("warn");
+                    faceStatus.classList.remove("good");
+                    updateCameraFields();
+                    showDistractionAlert("Distraction cue: face is not clearly visible. Please sit in front of the camera.");
+                }
+            })
+            .catch(function() {
+                faceStatus.innerText = "Face visibility: check unavailable";
+                faceStatus.classList.add("warn");
+            })
+            .finally(function() {
+                window.setTimeout(scanFaceVisibility, 1800);
+            });
+    }
+
+    document.querySelectorAll(".support-option").forEach(function(button) {
+        button.addEventListener("click", function() {
+            supportSignal = button.dataset.support;
+
+            document.querySelectorAll(".support-option").forEach(function(item) {
+                item.classList.remove("btn-primary");
+                item.classList.add("btn-outline-primary");
+            });
+
+            button.classList.remove("btn-outline-primary");
+            button.classList.add("btn-primary");
+
+            if (supportSignal === "comfortable") {
+                readingSupportStatus.innerText = "Reading support: learner feels okay";
+                readingSupportStatus.classList.add("good");
+                readingSupportStatus.classList.remove("warn");
+            } else {
+                readingSupportEvents += 1;
+                readingSupportStatus.innerText = supportSignal === "need_break"
+                    ? "Reading support: learner asked for a break"
+                    : "Reading support: learner said reading feels hard";
+                readingSupportStatus.classList.add("warn");
+                readingSupportStatus.classList.remove("good");
+                showDistractionAlert(
+                    supportSignal === "need_break"
+                        ? "Support cue: the learner asked for a break."
+                        : "Support cue: reading feels hard. Try voice assistance or a slower pace."
+                );
             }
-        );
 
+            updateCameraFields();
+        });
     });
 
-});
+    let seconds = 0;
+    setInterval(function() {
+        seconds += 1;
+        document.getElementById("timer").innerText = seconds;
+    }, 1000);
 
+    let randomMovementCount = 0;
+    let optionSwitchCount = 0;
+    let idleTime = 0;
+    let focusEvents = 0;
+    let lastActivity = Date.now();
+    const selectedAnswers = {};
 
-/* IDLE TRACKING */
-
-setInterval(()=>{
-
-    if(Date.now() - lastActivity > 5000){
-
-        idleSeconds++;
-
-        document.getElementById(
-            "debugIdle"
-        ).innerText =
-        idleSeconds;
+    function markActivity() {
+        lastActivity = Date.now();
     }
 
-},1000);
-
-
-/* SUBJECT NAVIGATION */
-
-const sections =
-document.querySelectorAll(
-    ".subject-section"
-);
-
-let currentSection = 0;
-
-function nextSubject(){
-
-    sections[currentSection]
-    .classList.remove("active");
-
-    currentSection++;
-
-    let progress =
-    (currentSection / sections.length) * 100;
-
-    document.getElementById(
-        "progressBar"
-    ).style.width =
-    progress + "%";
-
-    if(currentSection < sections.length){
-
-        sections[currentSection]
-        .classList.add("active");
-
-        const firstQuestion =
-        sections[currentSection]
-        .querySelector(".question-box");
-
-        setTimeout(()=>{
-
-            readCurrentQuestion(
-                firstQuestion
-            );
-
-        },800);
-
+    function updateMovementTotal() {
+        document.getElementById("movement_count").value = randomMovementCount + optionSwitchCount;
+        document.getElementById("random_movement_count").value = randomMovementCount;
+        document.getElementById("option_switch_count").value = optionSwitchCount;
+        document.getElementById("random_move_display").innerText = randomMovementCount;
+        document.getElementById("option_switch_display").innerText = optionSwitchCount;
     }
 
-    else{
+    document.addEventListener("mousemove", function() {
+        randomMovementCount += 1;
+        markActivity();
+        updateMovementTotal();
+    });
 
-        saveBehaviorData();
+    document.addEventListener("keydown", markActivity);
+    document.addEventListener("click", markActivity);
 
-        document.getElementById(
-            "quizForm"
-        ).submit();
+    document.querySelectorAll("input[type='radio']").forEach(function(input) {
+        input.addEventListener("change", function() {
+            if (selectedAnswers[input.name] && selectedAnswers[input.name] !== input.value) {
+                optionSwitchCount += 1;
+            }
+
+            selectedAnswers[input.name] = input.value;
+            markActivity();
+            updateMovementTotal();
+        });
+    });
+
+    window.addEventListener("blur", function() {
+        focusEvents += 1;
+        document.getElementById("focus_events").value = focusEvents;
+        document.getElementById("focus_switch_display").innerText = focusEvents;
+        showDistractionAlert("Distraction cue: test window was changed or lost focus.");
+    });
+
+    setInterval(function() {
+        if (Date.now() - lastActivity >= 5000) {
+            idleTime += 1;
+            document.getElementById("idle_time").value = idleTime;
+            document.getElementById("idle_display").innerText = idleTime;
+            if (idleTime > 5 && idleTime % 5 === 0) {
+                showDistractionAlert("Distraction cue: no activity for a while. Take a breath and continue when ready.");
+            }
+        }
+    }, 1000);
+
+    const voiceToggle = document.getElementById("voice_toggle");
+    const voiceStatus = document.getElementById("voice_status");
+    const readPageButton = document.getElementById("read_page");
+    const stopVoiceButton = document.getElementById("stop_voice");
+    const readButtons = Array.from(document.querySelectorAll(".read-question"));
+    const questionCards = Array.from(document.querySelectorAll(".question-card"));
+    const supportsSpeech = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+    let voiceEnabled = false;
+
+    function setVoiceControls(enabled) {
+        voiceEnabled = enabled && supportsSpeech;
+        voiceToggle.checked = voiceEnabled;
+        voiceStatus.innerText = supportsSpeech
+            ? (voiceEnabled ? "On - questions can be read aloud" : "Off")
+            : "Not supported in this browser";
+        readPageButton.disabled = !voiceEnabled;
+        stopVoiceButton.disabled = !voiceEnabled;
+        readButtons.forEach(function(button) {
+            button.disabled = !voiceEnabled;
+        });
+        localStorage.setItem("neurolearn_voice_enabled", voiceEnabled ? "1" : "0");
+
+        if (!voiceEnabled && supportsSpeech) {
+            window.speechSynthesis.cancel();
+        }
     }
-}
 
+    function speakText(text) {
+        if (!voiceEnabled || !supportsSpeech) {
+            return;
+        }
 
-/* SAVE */
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.88;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        window.speechSynthesis.speak(utterance);
+    }
 
-function saveBehaviorData(){
+    function getQuestionText(card) {
+        const title = card.querySelector(".question-title").innerText;
+        const options = Array.from(card.querySelectorAll(".option-text"))
+            .map(function(option, index) {
+                return "Option " + (index + 1) + ": " + option.innerText;
+            })
+            .join(". ");
 
-    document.getElementById(
-        "movement_count"
-    ).value = optionChanges;
+        return title + ". " + options + ".";
+    }
 
-    document.getElementById(
-        "idle_time"
-    ).value = idleSeconds;
-}
+    voiceToggle.addEventListener("change", function() {
+        setVoiceControls(voiceToggle.checked);
+        if (voiceEnabled) {
+            speakText("Voice assistance is on. Use the Read Question buttons to hear each question and its answer choices.");
+        }
+    });
 
-
-/* START */
-
-window.onload = ()=>{
-
-    speak(
-        "Welcome to NeuroLearn AI Assessment"
-    );
-
-    const firstQuestion =
-    document.querySelector(
-        ".question-box"
-    );
-
-    setTimeout(()=>{
-
-        readCurrentQuestion(
-            firstQuestion
+    readPageButton.addEventListener("click", function() {
+        speakText(
+            "Cognitive test for {{ student_name|escapejs }}. Grade band {{ grade_level|escapejs }}. " +
+            "Answer each question. Camera, movement, idle time, and focus changes are monitored during the assessment."
         );
+    });
 
-    },2000);
+    stopVoiceButton.addEventListener("click", function() {
+        if (supportsSpeech) {
+            window.speechSynthesis.cancel();
+        }
+    });
 
-};
+    readButtons.forEach(function(button) {
+        button.addEventListener("click", function() {
+            speakText(getQuestionText(button.closest(".question-card")));
+        });
+    });
 
+    questionCards.forEach(function(card) {
+        card.addEventListener("focus", function() {
+            speakText(getQuestionText(card));
+        });
+
+        card.querySelectorAll(".option").forEach(function(option) {
+            option.addEventListener("click", function() {
+                const optionText = option.querySelector(".option-text").innerText;
+                speakText("Selected option: " + optionText);
+            });
+        });
+    });
+
+    document.getElementById("test_form").addEventListener("submit", function() {
+        if (supportsSpeech) {
+            window.speechSynthesis.cancel();
+        }
+    });
+
+    setVoiceControls(localStorage.getItem("neurolearn_voice_enabled") === "1");
 </script>
-
 {% endblock %}
-```

@@ -1,216 +1,143 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Dyslexia-Friendly Font -->
-    <link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet">
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        body {
-            font-family: 'OpenDyslexic', Arial, sans-serif;
-            line-height: 1.8;
-            letter-spacing: 1px;
-            background-color: #f4f6f8;
-        }
-
-        .analysis-box {
-            background: #e8f5e9;
-            border-left: 6px solid #28a745;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .card {
-            border-radius: 15px;
-        }
-
-        canvas {
-            max-height: 400px;
-        }
-    </style>
-</head>
-
-<body class="bg-light">
-
-<div class="container mt-5 mb-5">
-
-    <div class="card shadow p-4">
-
-        <!-- PAGE TITLE -->
-        <h2 class="text-center mb-4">
-            🧠 Your Cognitive Test History
-        </h2>
-
-        <!-- TABLE -->
-        <div class="table-responsive">
-
-            <table class="table table-bordered table-striped text-center align-middle">
-
-                <thead class="table-dark">
-                    <tr>
-                        <th>Attempt</th>
-                        <th>Date & Time</th>
-                        <th>Time (s)</th>
-                        <th>Errors</th>
-                        <th>Load</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    {% for r in results %}
-                    <tr>
-
-                        <td>
-                            {{ forloop.counter }}
-                        </td>
-
-                        <!-- TIMESTAMP -->
-                        <td>
-                            {{ r.created_at|date:"d M Y, H:i" }}
-                        </td>
-
-                        <td>
-                            {{ r.time_taken }}
-                        </td>
-
-                        <td>
-                            {{ r.errors }}
-                        </td>
-
-                        <td>
-                            <span class="
-                                {% if r.load_level == 'Low' %}text-success
-                                {% elif r.load_level == 'Medium' %}text-warning
-                                {% else %}text-danger
-                                {% endif %}
-                            ">
-                                <b>{{ r.load_level }}</b>
-                            </span>
-                        </td>
-
-                    </tr>
-
-                    {% empty %}
-
-                    <tr>
-                        <td colspan="5">
-                            No attempts yet
-                        </td>
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-        <!-- GRAPH HEADING -->
-        <h4 class="text-center mt-5 mb-3">
-            📊 Performance Analysis (Errors per Attempt)
-        </h4>
-
-        <!-- GRAPH -->
-        <canvas id="errorChart" class="mt-2"></canvas>
-
-        <!-- 🔥 AI ANALYSIS SECTION -->
-        <div class="analysis-box mt-5">
-
-            <h4 class="mb-3">
-                📈 Weekly Cognitive Analysis
-            </h4>
-
-            <p style="font-size:17px;">
-                {{ analysis }}
-            </p>
-
-        </div>
-
-        <!-- BUTTONS -->
-        <div class="text-center mt-4">
-
-            <a href="{% url 'test' %}" class="btn btn-primary m-1">
-                Take Test Again
-            </a>
-
-            <a href="/" class="btn btn-secondary m-1">
-                Home
-            </a>
-
-        </div>
-
-    </div>
-
-</div>
-
-<script>
-
-const ctx = document.getElementById('errorChart');
-
-new Chart(ctx, {
-
-    type: 'line',
-
-    data: {
-
-        labels: {{ attempts|safe }},
-
-        datasets: [{
-
-            label: 'Errors per Attempt',
-
-            data: {{ errors|safe }},
-
-            borderWidth: 3,
-
-            tension: 0.3,
-
-            fill: false
-
-        }]
-
-    },
-
-    options: {
-
-        responsive: true,
-
-        plugins: {
-
-            legend: {
-                display: true
-            }
-
-        },
-
-        scales: {
-
-            y: {
-
-                beginAtZero: true,
-
-                ticks: {
-                    stepSize: 1
-                }
-
-            }
-
-        }
-
+{% extends 'base.html' %}
+
+{% block title %}Assessment Dashboard{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .dashboard-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: center;
+        padding: 28px;
+        margin-bottom: 22px;
     }
 
-});
+    .dashboard-head h1 {
+        margin: 0;
+        font-weight: 900;
+    }
 
+    .panel {
+        padding: 24px;
+    }
+
+    .load-low {
+        color: var(--accent);
+    }
+
+    .load-medium {
+        color: var(--warning);
+    }
+
+    .load-high {
+        color: var(--danger);
+    }
+
+    canvas {
+        width: 100% !important;
+        max-height: 360px;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-head {
+            display: grid;
+        }
+    }
+</style>
+
+<section class="surface dashboard-head">
+    <div>
+        <p class="text-uppercase fw-bold mb-2" style="color: var(--brand);">Teacher insights</p>
+        <h1>Assessment Dashboard</h1>
+    </div>
+    <a class="btn btn-primary" href="{% url 'student_details' %}">New Assessment</a>
+</section>
+
+<section class="surface panel mb-4">
+    <h2 class="h4 fw-bold mb-3">Cognitive Test History</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Attempt</th>
+                    <th>Date</th>
+                    <th>Grade</th>
+                    <th>Accuracy</th>
+                    <th>Attention</th>
+                    <th>Time</th>
+                    <th>Errors</th>
+                    <th>Load</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ r.created_at|date:"d M Y, H:i" }}</td>
+                        <td>{{ r.subject }}</td>
+                        <td>{{ r.accuracy }}%</td>
+                        <td>{{ r.attention_score }}</td>
+                        <td>{{ r.time_taken }}s</td>
+                        <td>{{ r.errors }}</td>
+                        <td>
+                            <strong class="{% if r.load_level == 'Low' %}load-low{% elif r.load_level == 'Medium' %}load-medium{% else %}load-high{% endif %}">
+                                {{ r.load_level }}
+                            </strong>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No attempts yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="surface panel mb-4">
+    <h2 class="h4 fw-bold mb-3">Errors per Attempt</h2>
+    <canvas id="errorChart"></canvas>
+</section>
+
+<section class="surface panel">
+    <h2 class="h4 fw-bold mb-3">Cognitive Analysis</h2>
+    <p class="mb-0">{{ analysis }}</p>
+</section>
+
+<script>
+    const ctx = document.getElementById("errorChart");
+
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: {{ attempts|safe }},
+            datasets: [{
+                label: "Errors",
+                data: {{ errors|safe }},
+                borderColor: "#2457c5",
+                backgroundColor: "rgba(36, 87, 197, 0.12)",
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
 </script>
-
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,49 @@
+<form method="POST">
+
+```
+{% csrf_token %}
+
+<h1>Student Registration</h1>
+
+<input
+    type="text"
+    name="student_name"
+    placeholder="Enter Student Name"
+    required
+>
+
+<br><br>
+
+<select
+    name="grade_level"
+    required
+>
+
+    <option value="1-2">
+        Grade 1-2
+    </option>
+
+    <option value="3-5">
+        Grade 3-5
+    </option>
+
+    <option value="6-8">
+        Grade 6-8
+    </option>
+
+    <option value="9-10">
+        Grade 9-10
+    </option>
+
+</select>
+
+<br><br>
+
+<button type="submit">
+
+    Start Test
+
+</button>
+```
+
+</form>

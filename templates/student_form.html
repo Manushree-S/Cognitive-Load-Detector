@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Registration{% endblock %}
+
+{% block content %}
+<style>
+    .student-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .student-panel,
+    .student-form {
+        padding: 32px;
+    }
+
+    .student-panel {
+        background: #10243f;
+        color: #ffffff;
+    }
+
+    .student-panel p {
+        color: #c8d5e6;
+    }
+
+    .grade-options {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .grade-option {
+        position: relative;
+    }
+
+    .grade-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .grade-option span {
+        display: block;
+        height: 100%;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        cursor: pointer;
+        font-weight: 800;
+    }
+
+    .grade-option small {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .grade-option input:checked + span {
+        color: #ffffff;
+        border-color: var(--brand);
+        background: var(--brand);
+    }
+
+    .grade-option input:checked + span small {
+        color: #dfe8ff;
+    }
+
+    @media (max-width: 840px) {
+        .student-grid,
+        .grade-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="student-grid">
+    <div class="surface student-panel">
+        <p class="text-uppercase fw-bold mb-2">Step 1</p>
+        <h1 class="fw-bold mb-3">Student Registration</h1>
+        <p class="mb-0">
+            Enter the learner profile before starting the grade-wise cognitive test. The selected grade
+            controls the question set and the feedback shown on the result page.
+        </p>
+    </div>
+
+    <form class="surface student-form" method="POST">
+        {% csrf_token %}
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <div class="mb-4">
+            <label class="form-label fw-bold" for="student_name">Student name</label>
+            <input class="form-control form-control-lg" id="student_name" name="student_name" type="text" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Grade band</label>
+            <div class="grade-options">
+                <label class="grade-option">
+                    <input type="radio" name="grade_level" value="1-2" {% if grade_level == "1-2" %}checked{% endif %}>
+                    <span>Grade 1-2<small>Early foundation</small></span>
+                </label>
+                <label class="grade-option">
+                    <input type="radio" name="grade_level" value="3-5" {% if not grade_level or grade_level == "3-5" %}checked{% endif %}>
+                    <span>Grade 3-5<small>Primary practice</small></span>
+                </label>
+                <label class="grade-option">
+                    <input type="radio" name="grade_level" value="6-8" {% if grade_level == "6-8" %}checked{% endif %}>
+                    <span>Grade 6-8<small>Middle school</small></span>
+                </label>
+                <label class="grade-option">
+                    <input type="radio" name="grade_level" value="9-10" {% if grade_level == "9-10" %}checked{% endif %}>
+                    <span>Grade 9-10<small>High school</small></span>
+                </label>
+            </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg w-100" type="submit">Continue to Test</button>
+    </form>
+</section>
+{% endblock %}

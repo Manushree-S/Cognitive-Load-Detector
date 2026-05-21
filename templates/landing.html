@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}NeuroLearn AI{% endblock %}
+
+{% block content %}
+<style>
+    .welcome {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        gap: 28px;
+        align-items: stretch;
+    }
+
+    .hero-copy {
+        padding: 44px;
+    }
+
+    .app-kicker {
+        margin-bottom: 8px;
+        color: var(--brand);
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    .hero-copy h1 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(2.3rem, 5vw, 4.4rem);
+        font-weight: 900;
+        line-height: 1.08;
+    }
+
+    .tagline {
+        margin: 14px 0 18px;
+        color: var(--accent);
+        font-size: clamp(1.25rem, 3vw, 1.8rem);
+        font-weight: 900;
+    }
+
+    .hero-copy p {
+        max-width: 720px;
+        margin: 0 0 26px;
+        color: var(--muted);
+        font-size: 1.05rem;
+    }
+
+    .support-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .support-tag {
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #ffffff;
+        font-weight: 800;
+    }
+
+    .hero-art {
+        display: flex;
+        align-items: center;
+        min-height: 520px;
+        padding: 18px;
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .hero-image {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        display: block;
+    }
+
+    .flow-list {
+        display: grid;
+        gap: 12px;
+        margin: 28px 0 0;
+    }
+
+    .flow-step {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+    }
+
+    .step-number {
+        display: inline-flex;
+        width: 42px;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: #ffffff;
+        background: var(--brand);
+        font-weight: 900;
+    }
+
+    @media (max-width: 940px) {
+        .welcome {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-art {
+            min-height: auto;
+        }
+    }
+</style>
+
+<section class="welcome">
+    <div class="surface hero-copy">
+        <div class="app-kicker">Cognitive Load Detector</div>
+        <h1>NeuroLearn AI</h1>
+        <div class="tagline">Focus. Learn. Thrive.</div>
+        <p>
+            Real-time cognitive load monitoring for neurodiverse learners. It supports students with
+            ADHD and dyslexia through grade-wise assessments, camera readiness, interaction tracking,
+            voice assistance, readable layouts, and teacher-friendly feedback.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+            {% if request.user.is_authenticated %}
+                <a class="btn btn-primary btn-lg" href="{% url 'student_details' %}">Start Assessment</a>
+            {% else %}
+                <a class="btn btn-primary btn-lg" href="{% url 'register' %}">Create Teacher Account</a>
+                <a class="btn btn-outline-primary btn-lg" href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
+
+        <div class="flow-list">
+            <div class="flow-step">
+                <span class="step-number">1</span>
+                <div><strong>Register learner</strong><br><span class="text-muted">Student name and grade band.</span></div>
+            </div>
+            <div class="flow-step">
+                <span class="step-number">2</span>
+                <div><strong>Run assessment</strong><br><span class="text-muted">Voice-supported questions with behavior tracking.</span></div>
+            </div>
+            <div class="flow-step">
+                <span class="step-number">3</span>
+                <div><strong>Review insights</strong><br><span class="text-muted">Graphs, load level, movement, idle rate, and feedback.</span></div>
+            </div>
+        </div>
+
+        <div class="support-tags" aria-label="Learner support features">
+            <span class="support-tag">ADHD support</span>
+            <span class="support-tag">Dyslexia reading aid</span>
+            <span class="support-tag">Voice questions</span>
+            <span class="support-tag">Camera cues</span>
+        </div>
+    </div>
+
+    <aside class="surface hero-art" aria-label="Illustration of supported learning">
+        <img
+            class="hero-image"
+            src="/static/images/neurolearn-welcome.svg"
+            alt="Student using a supported learning assessment dashboard with reading, focus, and progress insights"
+        >
+    </aside>
+</section>
+{% endblock %}

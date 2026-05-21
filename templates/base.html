@@ -1,45 +1,214 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}{% endblock %}</title>
-
-    <!-- Bootstrap -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NeuroLearn AI{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Dyslexia Font -->
     <link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet">
-
     <style>
+        :root {
+            --ink: #172033;
+            --muted: #5f6b7a;
+            --line: #d9e1ea;
+            --panel: #ffffff;
+            --soft: #f3f7fb;
+            --brand: #2457c5;
+            --brand-dark: #183f91;
+            --accent: #15906b;
+            --warning: #c97914;
+            --danger: #c83f49;
+            --app-font: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'OpenDyslexic', Arial, sans-serif;
-            line-height: 1.8;
-            letter-spacing: 1px;
-            background-color: #f8f9fa;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--ink);
+            font-family: var(--app-font);
+            line-height: 1.7;
+            letter-spacing: 0;
+            background: var(--soft);
+        }
+
+        body.dyslexia-mode {
+            --app-font: "OpenDyslexic", "Segoe UI", Arial, sans-serif;
+            line-height: 1.85;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .topbar {
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.96);
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            width: 34px;
+            height: 34px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: #ffffff;
+            background: var(--brand);
+            font-weight: 800;
+        }
+
+        .brand-name {
+            color: var(--ink);
+            font-weight: 800;
+        }
+
+        .nav-link {
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .nav-link:hover {
+            color: var(--brand);
+        }
+
+        .font-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 32px;
+            padding: 5px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--ink);
+            background: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 800;
+        }
+
+        .font-toggle input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .page-wrap {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 48px;
+        }
+
+        .surface {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: 0 18px 50px rgba(23, 32, 51, 0.08);
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-dark);
+            border-color: var(--brand-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .metric {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 18px;
+            background: #ffffff;
+        }
+
+        .metric-label {
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            margin: 0;
+            color: var(--ink);
+            font-size: 1.7rem;
+            font-weight: 800;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrap {
+                width: min(100% - 20px, 1120px);
+                padding-top: 20px;
+            }
+
+            .topbar .container,
+            .topbar .d-flex {
+                align-items: flex-start !important;
+                flex-wrap: wrap;
+            }
         }
     </style>
+    {% block head %}{% endblock %}
 </head>
-
 <body>
+    <nav class="navbar navbar-expand-lg topbar">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'landing_page' %}">
+                <span class="brand-mark">N</span>
+                <span class="brand-name">NeuroLearn AI</span>
+            </a>
 
-<!-- 🔥 NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-
-        <a class="navbar-brand" href="/">🧠 Cognitive App</a>
-
-        <div>
-            <a href="{% url 'test' %}" class="btn btn-primary btn-sm me-2">Quiz</a>
-            <a href="{% url 'dashboard' %}" class="btn btn-success btn-sm me-2">Dashboard</a>
-            <a href="/logout/" class="btn btn-danger btn-sm">Logout</a>
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <a class="nav-link" href="{% url 'landing_page' %}">Home</a>
+                {% if request.user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'student_details' %}">Assessment</a>
+                    <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    <a class="btn btn-sm btn-primary" href="{% url 'register' %}">Register</a>
+                {% endif %}
+                <label class="font-toggle" for="dyslexia_font_toggle">
+                    <input type="checkbox" id="dyslexia_font_toggle">
+                    Dyslexia font
+                </label>
+            </div>
         </div>
+    </nav>
 
-    </div>
-</nav>
+    <main class="page-wrap">
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        const dyslexiaToggle = document.getElementById("dyslexia_font_toggle");
+        const dyslexiaFontEnabled = localStorage.getItem("neurolearn_dyslexia_font") === "1";
 
-<!-- PAGE CONTENT -->
-<div class="container mt-4">
-    {% block content %}{% endblock %}
-</div>
+        function setDyslexiaFont(enabled) {
+            document.body.classList.toggle("dyslexia-mode", enabled);
+            dyslexiaToggle.checked = enabled;
+            localStorage.setItem("neurolearn_dyslexia_font", enabled ? "1" : "0");
+        }
 
+        setDyslexiaFont(dyslexiaFontEnabled);
+
+        dyslexiaToggle.addEventListener("change", function() {
+            setDyslexiaFont(dyslexiaToggle.checked);
+        });
+    </script>
 </body>
 </html>
