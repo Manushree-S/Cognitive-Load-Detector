@@ -124,3 +124,42 @@ class TestResult(models.Model):
             f"{self.load_level}"
         )
 
+
+class StudentFeedback(models.Model):
+
+    EMOJI_CHOICES = [
+        ("very_happy", "Very Happy"),
+        ("happy", "Happy"),
+        ("okay", "Okay"),
+        ("confused", "Confused"),
+        ("tired", "Tired"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    student_name = models.CharField(
+        max_length=100
+    )
+
+    grade_level = models.CharField(
+        max_length=20
+    )
+
+    emoji = models.CharField(
+        max_length=30,
+        choices=EMOJI_CHOICES
+    )
+
+    comment = models.TextField(
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.student_name} - {self.grade_level} - {self.emoji}"

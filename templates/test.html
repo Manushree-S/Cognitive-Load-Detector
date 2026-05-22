@@ -4,17 +4,28 @@
 
 {% block content %}
 <style>
+    .test-main {
+        min-width: 0;
+        padding-right: 400px;
+    }
+
     .test-header {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
-        gap: 20px;
-        align-items: stretch;
         margin-bottom: 22px;
     }
 
     .test-title,
     .monitor {
         padding: 24px;
+    }
+
+    .monitor {
+        position: fixed;
+        top: 88px;
+        right: max(16px, calc((100vw - 1120px) / 2));
+        z-index: 10;
+        width: min(360px, calc(100vw - 32px));
+        max-height: calc(100vh - 110px);
+        overflow-y: auto;
     }
 
     .test-title h1 {
@@ -25,7 +36,7 @@
 
     .live-grid {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 12px;
         margin-top: 20px;
     }
@@ -133,25 +144,6 @@
         background: #fff7e9;
     }
 
-    .support-check {
-        display: grid;
-        gap: 8px;
-        margin-top: 14px;
-    }
-
-    .support-check p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.9rem;
-        font-weight: 800;
-    }
-
-    .support-buttons {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
     .camera-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -248,10 +240,35 @@
         background: linear-gradient(180deg, rgba(243, 247, 251, 0), var(--soft) 30%);
     }
 
-    @media (max-width: 900px) {
-        .test-header,
+    @media (max-width: 760px) {
+        .test-main {
+            padding-right: 0;
+        }
+
         .live-grid {
             grid-template-columns: 1fr;
+        }
+
+        .monitor {
+            top: 76px;
+            right: 10px;
+            width: min(220px, calc(100vw - 20px));
+            max-height: calc(100vh - 92px);
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .monitor h2 {
+            font-size: 1rem;
+        }
+
+        .camera-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .camera-status,
+        .camera-chip {
+            font-size: 0.8rem;
         }
 
         .question-topline,
@@ -265,127 +282,124 @@
     }
 </style>
 
-<div class="distraction-alert" id="distraction_alert" role="alert" aria-live="polite"></div>
+<div class="assessment-shell">
+    <div class="test-main">
+        <aside class="surface monitor">
+            <h2 class="h5 fw-bold">Camera Support</h2>
+            <div class="camera-frame">
+                <video id="video" autoplay muted playsinline></video>
+                <div class="camera-placeholder" id="camera_placeholder">
+                    Camera preview will appear here after access is allowed.
+                </div>
+            </div>
+            <div class="camera-status" id="camera_status">Requesting camera access...</div>
+            <div class="camera-actions">
+                <button type="button" class="btn btn-sm btn-primary" id="start_camera">Start Camera</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="retry_camera">Retry</button>
+            </div>
+            <div class="camera-insights">
+                <div class="camera-chip" id="face_status">Face visibility: waiting</div>
+            </div>
+        </aside>
 
-<section class="test-header">
-    <div class="surface test-title">
-        <p class="text-uppercase fw-bold mb-2" style="color: var(--brand);">Step 2</p>
-        <h1>Grade-wise Cognitive Test</h1>
-        <p class="text-muted mb-0">
-            Student: <strong>{{ student_name }}</strong> &nbsp; Grade band: <strong>{{ grade_level }}</strong>
-        </p>
+        <div class="distraction-alert" id="distraction_alert" role="alert" aria-live="polite"></div>
 
-        <div class="live-grid">
-            <div class="metric">
-                <div class="metric-label">Time</div>
-                <p class="metric-value"><span id="timer">0</span>s</p>
-            </div>
-            <div class="metric">
-                <div class="metric-label">Random moves</div>
-                <p class="metric-value" id="random_move_display">0</p>
-            </div>
-            <div class="metric">
-                <div class="metric-label">Option switches</div>
-                <p class="metric-value" id="option_switch_display">0</p>
-            </div>
-            <div class="metric">
-                <div class="metric-label">Idle</div>
-                <p class="metric-value"><span id="idle_display">0</span>s</p>
-            </div>
-            <div class="metric">
-                <div class="metric-label">Window switches</div>
-                <p class="metric-value" id="focus_switch_display">0</p>
-            </div>
-        </div>
+        <section class="test-header">
+            <div class="surface test-title">
+                <p class="text-uppercase fw-bold mb-2" style="color: var(--brand);">Step 2</p>
+                <h1>Grade-wise Cognitive Test</h1>
+                <p class="text-muted mb-0">
+                    Student: <strong>{{ student_name }}</strong> &nbsp; Grade band: <strong>{{ grade_level }}</strong>
+                </p>
 
-        <div class="assist-panel" aria-label="Voice assistance controls">
-            <div class="voice-switch">
-                <label for="voice_toggle">
-                    <input type="checkbox" id="voice_toggle">
-                    Voice assistance
-                </label>
-                <span class="voice-note" id="voice_status">Off</span>
-            </div>
-            <div class="voice-actions">
-                <button type="button" class="btn btn-sm btn-outline-primary" id="read_page" disabled>Read Instructions</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="stop_voice" disabled>Stop Voice</button>
-            </div>
-        </div>
-    </div>
-
-    <aside class="surface monitor">
-        <h2 class="h5 fw-bold">Camera Support</h2>
-        <div class="camera-frame">
-            <video id="video" autoplay muted playsinline></video>
-            <div class="camera-placeholder" id="camera_placeholder">
-                Camera preview will appear here after access is allowed.
-            </div>
-        </div>
-        <div class="camera-status" id="camera_status">Requesting camera access...</div>
-        <div class="camera-actions">
-            <button type="button" class="btn btn-sm btn-primary" id="start_camera">Start Camera</button>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="retry_camera">Retry</button>
-        </div>
-        <div class="camera-insights">
-            <div class="camera-chip" id="face_status">Face visibility: waiting</div>
-            <div class="camera-chip" id="reading_support_status">Reading support: no concern selected</div>
-        </div>
-        <div class="support-check" aria-label="Student support check">
-            <p>How does this feel right now?</p>
-            <div class="support-buttons">
-                <button type="button" class="btn btn-sm btn-outline-primary support-option" data-support="comfortable">I am okay</button>
-                <button type="button" class="btn btn-sm btn-outline-primary support-option" data-support="need_break">I need a break</button>
-                <button type="button" class="btn btn-sm btn-outline-primary support-option" data-support="reading_hard">Reading feels hard</button>
-            </div>
-        </div>
-    </aside>
-</section>
-
-<form method="POST" id="test_form">
-    {% csrf_token %}
-    <input type="hidden" name="start_time" value="{{ start_time }}">
-    <input type="hidden" name="movement_count" id="movement_count" value="0">
-    <input type="hidden" name="random_movement_count" id="random_movement_count" value="0">
-    <input type="hidden" name="option_switch_count" id="option_switch_count" value="0">
-    <input type="hidden" name="idle_time" id="idle_time" value="0">
-    <input type="hidden" name="focus_events" id="focus_events" value="0">
-    <input type="hidden" name="face_missing_events" id="face_missing_events" value="0">
-    <input type="hidden" name="reading_support_events" id="reading_support_events" value="0">
-    <input type="hidden" name="support_signal" id="support_signal" value="comfortable">
-
-    {% for subject, qs in questions.items %}
-        <section class="subject-section">
-            <h2 class="subject-title">{{ subject }}</h2>
-
-            {% for q in qs %}
-                <article class="surface question-card" tabindex="0">
-                    <div class="question-topline">
-                        <h3 class="question-title">Question {{ forloop.counter }}: {{ q.q }}</h3>
-                        <button type="button" class="btn btn-sm btn-outline-primary read-question" disabled>Read Question</button>
+                <div class="live-grid">
+                    <div class="metric">
+                        <div class="metric-label">Time</div>
+                        <p class="metric-value"><span id="timer">0</span>s</p>
                     </div>
-                    <div class="option-list">
-                        {% for option in q.options %}
-                            <label class="option">
-                                <input
-                                    type="radio"
-                                    name="{{ subject }}_{{ forloop.parentloop.counter0 }}"
-                                    value="{{ option }}"
-                                    required
-                                >
-                                <span class="option-text">{{ option }}</span>
-                            </label>
-                        {% endfor %}
+                    <div class="metric">
+                        <div class="metric-label">Random moves</div>
+                        <p class="metric-value" id="random_move_display">0</p>
                     </div>
-                </article>
-            {% endfor %}
+                    <div class="metric">
+                        <div class="metric-label">Option switches</div>
+                        <p class="metric-value" id="option_switch_display">0</p>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Idle</div>
+                        <p class="metric-value"><span id="idle_display">0</span>s</p>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Window switches</div>
+                        <p class="metric-value" id="focus_switch_display">0</p>
+                    </div>
+                </div>
+
+                <div class="assist-panel" aria-label="Voice assistance controls">
+                    <div class="voice-switch">
+                        <label for="voice_toggle">
+                            <input type="checkbox" id="voice_toggle">
+                            Voice assistance
+                        </label>
+                        <span class="voice-note" id="voice_status">Off</span>
+                    </div>
+                    <div class="voice-actions">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="read_page" disabled>Read Instructions</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="stop_voice" disabled>Stop Voice</button>
+                    </div>
+                </div>
+            </div>
         </section>
-    {% endfor %}
 
-    <div class="submit-row">
-        <button type="submit" class="btn btn-primary btn-lg w-100">Submit Assessment</button>
+        <form method="POST" id="test_form">
+            {% csrf_token %}
+            <input type="hidden" name="start_time" value="{{ start_time }}">
+            <input type="hidden" name="movement_count" id="movement_count" value="0">
+            <input type="hidden" name="random_movement_count" id="random_movement_count" value="0">
+            <input type="hidden" name="option_switch_count" id="option_switch_count" value="0">
+            <input type="hidden" name="idle_time" id="idle_time" value="0">
+            <input type="hidden" name="focus_events" id="focus_events" value="0">
+            <input type="hidden" name="face_missing_events" id="face_missing_events" value="0">
+            <input type="hidden" name="reading_support_events" id="reading_support_events" value="0">
+            <input type="hidden" name="support_signal" id="support_signal" value="comfortable">
+
+            {% for subject, qs in questions.items %}
+                <section class="subject-section">
+                    <h2 class="subject-title">{{ subject }}</h2>
+
+                    {% for q in qs %}
+                        <article class="surface question-card" tabindex="0">
+                            <div class="question-topline">
+                                <h3 class="question-title">Question {{ forloop.counter }}: {{ q.q }}</h3>
+                                <button type="button" class="btn btn-sm btn-outline-primary read-question" disabled>Read Question</button>
+                            </div>
+                            <div class="option-list">
+                                {% for option in q.options %}
+                                    <label class="option">
+                                        <input
+                                            type="radio"
+                                            name="{{ subject }}_{{ forloop.parentloop.counter0 }}"
+                                            value="{{ option }}"
+                                            required
+                                        >
+                                        <span class="option-text">{{ option }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endfor %}
+
+            <div class="submit-row">
+                <button type="submit" class="btn btn-primary btn-lg w-100">Submit Assessment</button>
+            </div>
+        </form>
     </div>
-</form>
 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
 <script>
     const video = document.getElementById("video");
     const cameraStatus = document.getElementById("camera_status");
@@ -394,15 +408,100 @@
     const retryCameraButton = document.getElementById("retry_camera");
     const distractionAlert = document.getElementById("distraction_alert");
     const faceStatus = document.getElementById("face_status");
-    const readingSupportStatus = document.getElementById("reading_support_status");
     let faceMissingEvents = 0;
     let readingSupportEvents = 0;
     let supportSignal = "comfortable";
-    let faceDetector = null;
+    let browserFaceDetector = null;
+    let mediaPipeFaceDetector = null;
+    let faceDetectorMode = "none";
     let lastFaceSeenAt = Date.now();
+    let lastFaceMissingCountedAt = 0;
+    let faceScanTimer = null;
 
-    if ("FaceDetector" in window) {
-        faceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+    function setFaceStatus(message, state) {
+        faceStatus.innerText = message;
+        faceStatus.classList.toggle("good", state === "good");
+        faceStatus.classList.toggle("warn", state === "warn");
+    }
+
+    function setupMediaPipeDetector() {
+        if (!("FaceDetection" in window)) {
+            return false;
+        }
+
+        try {
+            mediaPipeFaceDetector = new FaceDetection({
+                locateFile: function(file) {
+                    return "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/" + file;
+                }
+            });
+
+            mediaPipeFaceDetector.setOptions({
+                model: "short",
+                minDetectionConfidence: 0.55
+            });
+
+            mediaPipeFaceDetector.onResults(handleMediaPipeResults);
+            faceDetectorMode = "mediapipe";
+            setFaceStatus("Face visibility: MediaPipe ready", "good");
+            return true;
+        } catch (error) {
+            console.warn("MediaPipe setup error:", error);
+            mediaPipeFaceDetector = null;
+            return false;
+        }
+    }
+
+    function setupBrowserFaceDetector() {
+        if (!("FaceDetector" in window)) {
+            return false;
+        }
+
+        browserFaceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+        faceDetectorMode = "browser";
+        setFaceStatus("Face visibility: browser detector ready", "good");
+        return true;
+    }
+
+    setupMediaPipeDetector() || setupBrowserFaceDetector();
+
+    function scheduleFaceScan(delay) {
+        window.clearTimeout(faceScanTimer);
+        faceScanTimer = window.setTimeout(scanFaceVisibility, delay);
+    }
+
+    function handleVisibleFace(source, confidence) {
+        lastFaceSeenAt = Date.now();
+        const confidenceText = confidence ? " (" + Math.round(confidence * 100) + "%)" : "";
+        setFaceStatus("Face visibility: learner visible via " + source + confidenceText, "good");
+    }
+
+    function handleMissingFace(source) {
+        if (Date.now() - lastFaceSeenAt <= 4000) {
+            return;
+        }
+
+        if (Date.now() - lastFaceMissingCountedAt > 4000) {
+            faceMissingEvents += 1;
+            lastFaceMissingCountedAt = Date.now();
+            updateCameraFields();
+        }
+
+        setFaceStatus("Face visibility: not visible via " + source, "warn");
+        showDistractionAlert("Distraction cue: face is not clearly visible. Please sit in front of the camera.");
+    }
+
+    function handleMediaPipeResults(results) {
+        const detections = results && results.detections ? results.detections : [];
+
+        if (detections.length > 0) {
+            const score = detections[0].score && detections[0].score.length
+                ? detections[0].score[0]
+                : null;
+            handleVisibleFace("MediaPipe", score);
+        } else {
+            handleMissingFace("MediaPipe");
+        }
     }
 
     function showDistractionAlert(message) {
@@ -454,12 +553,10 @@
                 cameraStatus.classList.add("good");
                 lastFaceSeenAt = Date.now();
 
-                if (faceDetector) {
-                    window.setTimeout(scanFaceVisibility, 900);
+                if (faceDetectorMode !== "none") {
+                    scheduleFaceScan(900);
                 } else {
-                    faceStatus.innerText = "Face visibility: preview active, face check not supported";
-                    faceStatus.classList.add("good");
-                    faceStatus.classList.remove("warn");
+                    setFaceStatus("Face visibility: preview active, AI detector unavailable", "warn");
                 }
             })
             .catch(function(error) {
@@ -482,69 +579,52 @@
     }
 
     function scanFaceVisibility() {
-        if (!faceDetector || video.readyState < 2) {
-            window.setTimeout(scanFaceVisibility, 1500);
+        if (video.readyState < 2) {
+            scheduleFaceScan(1500);
             return;
         }
 
-        faceDetector.detect(video)
+        if (mediaPipeFaceDetector) {
+            mediaPipeFaceDetector.send({ image: video })
+                .catch(function(error) {
+                    console.warn("MediaPipe scan error:", error);
+                    mediaPipeFaceDetector = null;
+                    if (!browserFaceDetector) {
+                        setupBrowserFaceDetector();
+                    }
+                    if (browserFaceDetector) {
+                        faceDetectorMode = "browser";
+                    } else {
+                        faceDetectorMode = "none";
+                        setFaceStatus("Face visibility: AI detector unavailable", "warn");
+                    }
+                })
+                .finally(function() {
+                    scheduleFaceScan(1200);
+                });
+            return;
+        }
+
+        if (!browserFaceDetector) {
+            setFaceStatus("Face visibility: AI detector unavailable", "warn");
+            return;
+        }
+
+        browserFaceDetector.detect(video)
             .then(function(faces) {
                 if (faces.length > 0) {
-                    lastFaceSeenAt = Date.now();
-                    faceStatus.innerText = "Face visibility: learner visible";
-                    faceStatus.classList.add("good");
-                    faceStatus.classList.remove("warn");
-                } else if (Date.now() - lastFaceSeenAt > 4000) {
-                    faceMissingEvents += 1;
-                    faceStatus.innerText = "Face visibility: not visible for a few seconds";
-                    faceStatus.classList.add("warn");
-                    faceStatus.classList.remove("good");
-                    updateCameraFields();
-                    showDistractionAlert("Distraction cue: face is not clearly visible. Please sit in front of the camera.");
+                    handleVisibleFace("browser detector");
+                } else {
+                    handleMissingFace("browser detector");
                 }
             })
             .catch(function() {
-                faceStatus.innerText = "Face visibility: check unavailable";
-                faceStatus.classList.add("warn");
+                setFaceStatus("Face visibility: check unavailable", "warn");
             })
             .finally(function() {
-                window.setTimeout(scanFaceVisibility, 1800);
+                scheduleFaceScan(1800);
             });
     }
-
-    document.querySelectorAll(".support-option").forEach(function(button) {
-        button.addEventListener("click", function() {
-            supportSignal = button.dataset.support;
-
-            document.querySelectorAll(".support-option").forEach(function(item) {
-                item.classList.remove("btn-primary");
-                item.classList.add("btn-outline-primary");
-            });
-
-            button.classList.remove("btn-outline-primary");
-            button.classList.add("btn-primary");
-
-            if (supportSignal === "comfortable") {
-                readingSupportStatus.innerText = "Reading support: learner feels okay";
-                readingSupportStatus.classList.add("good");
-                readingSupportStatus.classList.remove("warn");
-            } else {
-                readingSupportEvents += 1;
-                readingSupportStatus.innerText = supportSignal === "need_break"
-                    ? "Reading support: learner asked for a break"
-                    : "Reading support: learner said reading feels hard";
-                readingSupportStatus.classList.add("warn");
-                readingSupportStatus.classList.remove("good");
-                showDistractionAlert(
-                    supportSignal === "need_break"
-                        ? "Support cue: the learner asked for a break."
-                        : "Support cue: reading feels hard. Try voice assistance or a slower pace."
-                );
-            }
-
-            updateCameraFields();
-        });
-    });
 
     let seconds = 0;
     setInterval(function() {

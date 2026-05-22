@@ -4,167 +4,477 @@
 
 {% block content %}
 <style>
-    .welcome {
+    .home-hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
         gap: 28px;
-        align-items: stretch;
+        align-items: center;
+        min-height: 560px;
+        padding: 38px 0 8px;
     }
 
     .hero-copy {
-        padding: 44px;
+        padding: 18px 4px 18px 0;
     }
 
     .app-kicker {
-        margin-bottom: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
         color: var(--brand);
         font-weight: 900;
         text-transform: uppercase;
     }
 
+    .app-kicker::before {
+        content: "";
+        width: 34px;
+        height: 8px;
+        border-radius: 999px;
+        background: #ff7a1a;
+    }
+
     .hero-copy h1 {
         max-width: 760px;
         margin: 0;
-        font-size: clamp(2.3rem, 5vw, 4.4rem);
+        color: #062545;
+        font-size: clamp(3rem, 7vw, 5.8rem);
         font-weight: 900;
-        line-height: 1.08;
+        letter-spacing: 0;
+        line-height: 0.98;
+    }
+
+    .hero-copy h1 span {
+        display: block;
+        color: #ff7a1a;
     }
 
     .tagline {
-        margin: 14px 0 18px;
-        color: var(--accent);
-        font-size: clamp(1.25rem, 3vw, 1.8rem);
-        font-weight: 900;
+        max-width: 560px;
+        margin: 22px 0 26px;
+        color: var(--ink);
+        font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+        font-weight: 800;
+        line-height: 1.55;
     }
 
-    .hero-copy p {
-        max-width: 720px;
-        margin: 0 0 26px;
-        color: var(--muted);
-        font-size: 1.05rem;
+    .tagline strong {
+        color: #7a5ce0;
     }
 
-    .support-tags {
+    .hero-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 24px;
+        gap: 12px;
     }
 
-    .support-tag {
-        padding: 10px 14px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        color: var(--ink);
-        background: #ffffff;
-        font-weight: 800;
-    }
-
-    .hero-art {
-        display: flex;
-        align-items: center;
+    .hero-stage {
+        position: relative;
         min-height: 520px;
-        padding: 18px;
-        background: #ffffff;
         overflow: hidden;
     }
 
-    .hero-image {
-        width: 100%;
-        height: auto;
-        border-radius: 8px;
-        display: block;
+    .hero-photo {
+        position: absolute;
+        right: 22px;
+        bottom: 0;
+        z-index: 2;
+        width: min(74%, 500px);
+        height: 500px;
+        border-radius: 42% 42% 8px 8px;
+        object-fit: cover;
+        object-position: center;
+        box-shadow: 0 28px 60px rgba(6, 37, 69, 0.2);
     }
 
-    .flow-list {
-        display: grid;
-        gap: 12px;
-        margin: 28px 0 0;
+    .paint-splash {
+        position: absolute;
+        border-radius: 38% 62% 54% 46%;
+        transform: rotate(-8deg);
     }
 
-    .flow-step {
+    .paint-splash.yellow {
+        right: 18px;
+        top: 26px;
+        width: 390px;
+        height: 320px;
+        background: #ffc928;
+    }
+
+    .paint-splash.teal {
+        right: 190px;
+        bottom: 26px;
+        width: 340px;
+        height: 260px;
+        background: #29b9be;
+        opacity: 0.92;
+    }
+
+    .paint-splash.purple {
+        right: 0;
+        top: 250px;
+        width: 190px;
+        height: 130px;
+        background: #8659df;
+        opacity: 0.9;
+    }
+
+    .doodle {
+        position: absolute;
+        z-index: 3;
+        color: #082747;
+        font-weight: 900;
+        line-height: 1.1;
+    }
+
+    .doodle.idea {
+        left: 28px;
+        top: 138px;
+        max-width: 150px;
+        font-size: 1.28rem;
+        transform: rotate(-2deg);
+    }
+
+    .doodle.focus {
+        right: 28px;
+        top: 286px;
+        color: #ffffff;
+        font-size: 1.32rem;
+        transform: rotate(-4deg);
+    }
+
+    .lightbulb {
+        position: absolute;
+        left: 118px;
+        top: 48px;
+        z-index: 3;
+        width: 76px;
+        height: 76px;
+        border: 5px solid #082747;
+        border-radius: 50% 50% 44% 44%;
+        background: #ffd447;
+    }
+
+    .lightbulb::before,
+    .lightbulb::after {
+        position: absolute;
+        content: "";
+        background: #082747;
+    }
+
+    .lightbulb::before {
+        left: 25px;
+        bottom: -18px;
+        width: 26px;
+        height: 18px;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .lightbulb::after {
+        left: 21px;
+        top: 28px;
+        width: 34px;
+        height: 5px;
+        border-radius: 999px;
+        transform: rotate(-25deg);
+    }
+
+    .paper-plane {
+        position: absolute;
+        right: 30px;
+        top: 105px;
+        z-index: 3;
+        width: 70px;
+        height: 52px;
+        clip-path: polygon(0 0, 100% 42%, 16% 56%, 0 100%, 34% 60%);
+        background: #ffffff;
+        border: 2px solid #082747;
+        box-shadow: inset 0 0 0 3px #082747;
+        transform: rotate(18deg);
+    }
+
+    .feature-grid {
         display: grid;
-        grid-template-columns: 42px minmax(0, 1fr);
-        gap: 14px;
-        align-items: center;
-        padding: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 22px;
+    }
+
+    .feature-card {
+        position: relative;
+        min-height: 320px;
+        padding: 32px;
         border: 1px solid var(--line);
         border-radius: 8px;
+        overflow: hidden;
         background: #ffffff;
+        box-shadow: 0 18px 50px rgba(23, 32, 51, 0.08);
     }
 
-    .step-number {
-        display: inline-flex;
-        width: 42px;
-        height: 42px;
+    .feature-card h2 {
+        margin: 0 0 20px;
+        font-size: clamp(2.1rem, 5vw, 3.6rem);
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .feature-card p {
+        position: relative;
+        z-index: 2;
+        max-width: 260px;
+        margin: 0 0 22px;
+        color: var(--ink);
+        font-weight: 800;
+    }
+
+    .feature-card small {
+        display: block;
+        max-width: 260px;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    .feature-photo {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 46%;
+        height: 88%;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 40% 0 0 0;
+    }
+
+    .adhd-card {
+        background: #f7f3ff;
+    }
+
+    .adhd-card h2 {
+        color: #7a5ce0;
+    }
+
+    .dyslexia-card {
+        background: #eefbfc;
+    }
+
+    .dyslexia-card h2 {
+        color: #0e9da4;
+    }
+
+    .card-doodle {
+        position: absolute;
+        right: 26%;
+        top: 48px;
+        width: 160px;
+        height: 120px;
+        opacity: 0.55;
+    }
+
+    .card-doodle path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 8;
+        stroke-linecap: round;
+    }
+
+    .home-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 22px;
+        padding: 18px 0;
+    }
+
+    .strip-item {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr);
+        gap: 12px;
         align-items: center;
-        justify-content: center;
+        padding: 14px;
+        border-right: 1px solid var(--line);
+    }
+
+    .strip-item:last-child {
+        border-right: 0;
+    }
+
+    .strip-icon {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        place-items: center;
+        border: 2px solid var(--brand);
         border-radius: 8px;
-        color: #ffffff;
-        background: var(--brand);
+        color: var(--brand);
+        font-size: 1.35rem;
         font-weight: 900;
     }
 
-    @media (max-width: 940px) {
-        .welcome {
+    .strip-item strong {
+        display: block;
+        color: var(--ink);
+        font-weight: 900;
+    }
+
+    .strip-item span {
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+        .home-hero,
+        .feature-grid,
+        .home-strip {
             grid-template-columns: 1fr;
         }
 
-        .hero-art {
-            min-height: auto;
+        .hero-stage {
+            min-height: 460px;
+        }
+
+        .hero-photo {
+            width: min(78%, 460px);
+            height: 430px;
+        }
+
+        .strip-item {
+            border-right: 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .strip-item:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    @media (max-width: 620px) {
+        .home-hero {
+            padding-top: 10px;
+        }
+
+        .hero-stage {
+            min-height: 380px;
+        }
+
+        .hero-photo {
+            right: 6px;
+            width: 82%;
+            height: 360px;
+        }
+
+        .paint-splash.yellow {
+            width: 280px;
+            height: 230px;
+        }
+
+        .paint-splash.teal {
+            right: 82px;
+            width: 240px;
+            height: 200px;
+        }
+
+        .doodle.idea,
+        .paper-plane {
+            display: none;
+        }
+
+        .feature-card {
+            min-height: 430px;
+        }
+
+        .feature-photo {
+            width: 62%;
+            height: 58%;
         }
     }
 </style>
 
-<section class="welcome">
-    <div class="surface hero-copy">
+<section class="home-hero">
+    <div class="hero-copy">
         <div class="app-kicker">Cognitive Load Detector</div>
-        <h1>NeuroLearn AI</h1>
-        <div class="tagline">Focus. Learn. Thrive.</div>
-        <p>
-            Real-time cognitive load monitoring for neurodiverse learners. It supports students with
-            ADHD and dyslexia through grade-wise assessments, camera readiness, interaction tracking,
-            voice assistance, readable layouts, and teacher-friendly feedback.
+        <h1>Different Minds,<span>Clearer Learning.</span></h1>
+        <p class="tagline">
+            Understanding ADHD and dyslexia through supportive assessments,
+            <strong>real-time focus cues</strong>, and learner-friendly feedback.
         </p>
 
-        <div class="d-flex flex-wrap gap-2">
+        <div class="hero-actions">
             {% if request.user.is_authenticated %}
                 <a class="btn btn-primary btn-lg" href="{% url 'student_details' %}">Start Assessment</a>
+                <a class="btn btn-outline-primary btn-lg" href="{% url 'dashboard' %}">View Insights</a>
             {% else %}
-                <a class="btn btn-primary btn-lg" href="{% url 'register' %}">Create Teacher Account</a>
+                <a class="btn btn-primary btn-lg" href="{% url 'register' %}">Create Account</a>
                 <a class="btn btn-outline-primary btn-lg" href="{% url 'login' %}">Login</a>
             {% endif %}
         </div>
-
-        <div class="flow-list">
-            <div class="flow-step">
-                <span class="step-number">1</span>
-                <div><strong>Register learner</strong><br><span class="text-muted">Student name and grade band.</span></div>
-            </div>
-            <div class="flow-step">
-                <span class="step-number">2</span>
-                <div><strong>Run assessment</strong><br><span class="text-muted">Voice-supported questions with behavior tracking.</span></div>
-            </div>
-            <div class="flow-step">
-                <span class="step-number">3</span>
-                <div><strong>Review insights</strong><br><span class="text-muted">Graphs, load level, movement, idle rate, and feedback.</span></div>
-            </div>
-        </div>
-
-        <div class="support-tags" aria-label="Learner support features">
-            <span class="support-tag">ADHD support</span>
-            <span class="support-tag">Dyslexia reading aid</span>
-            <span class="support-tag">Voice questions</span>
-            <span class="support-tag">Camera cues</span>
-        </div>
     </div>
 
-    <aside class="surface hero-art" aria-label="Illustration of supported learning">
+    <div class="hero-stage" aria-label="Photo collage of supported learning and brainstorming">
+        <span class="paint-splash yellow" aria-hidden="true"></span>
+        <span class="paint-splash teal" aria-hidden="true"></span>
+        <span class="paint-splash purple" aria-hidden="true"></span>
+        <span class="lightbulb" aria-hidden="true"></span>
+        <span class="paper-plane" aria-hidden="true"></span>
+        <span class="doodle idea">My brain has ideas of its own.</span>
+        <span class="doodle focus">Focus<br>Passion<br>Potential</span>
         <img
-            class="hero-image"
-            src="/static/images/neurolearn-welcome.svg"
-            alt="Student using a supported learning assessment dashboard with reading, focus, and progress insights"
+            class="hero-photo"
+            src="https://images.unsplash.com/photo-1585432959445-662c9bbcd91d?auto=format&fit=crop&w=1000&q=80"
+            alt="Learner thinking while studying"
         >
-    </aside>
+    </div>
+</section>
+
+<section class="feature-grid" aria-label="Learning support areas">
+    <article class="feature-card adhd-card">
+        <h2>ADHD</h2>
+        <p>Curious mind. Limitless energy. Different focus. Endless potential.</p>
+        <small>Movement, idle time, focus changes, and option switches help shape a calmer assessment picture.</small>
+        <svg class="card-doodle" viewBox="0 0 160 120" aria-hidden="true">
+            <path d="M12 55c22-38 51-37 72-6s42 31 62-6"/>
+            <path d="M24 88c34-46 70-48 112-4"/>
+        </svg>
+        <img
+            class="feature-photo"
+            src="https://images.unsplash.com/photo-1507026112576-6c62e89406af?auto=format&fit=crop&w=800&q=80"
+            alt="Child exploring with bright curiosity"
+        >
+    </article>
+
+    <article class="feature-card dyslexia-card">
+        <h2>Dyslexia</h2>
+        <p>Different way of learning. Unique way of seeing.</p>
+        <small>Readable layouts and voice support help learners engage with questions at a comfortable pace.</small>
+        <svg class="card-doodle" viewBox="0 0 160 120" aria-hidden="true">
+            <path d="M26 24h36M26 52h66M26 80h48"/>
+            <path d="M106 28c28 16 28 48 0 64"/>
+        </svg>
+        <img
+            class="feature-photo"
+            src="https://images.unsplash.com/photo-1656030804388-ab973b9f6bf3?auto=format&fit=crop&w=800&q=80"
+            alt="Learner reading a book"
+        >
+    </article>
+</section>
+
+<section class="surface home-strip" aria-label="App support highlights">
+    <div class="strip-item">
+        <span class="strip-icon">+</span>
+        <div><strong>You are not alone</strong><span>Supportive assessment flow</span></div>
+    </div>
+    <div class="strip-item">
+        <span class="strip-icon">A</span>
+        <div><strong>Learn & Understand</strong><span>Grade-wise questions and feedback</span></div>
+    </div>
+    <div class="strip-item">
+        <span class="strip-icon">?</span>
+        <div><strong>Find Support</strong><span>Voice and readable modes</span></div>
+    </div>
+    <div class="strip-item">
+        <span class="strip-icon">*</span>
+        <div><strong>Celebrate Strengths</strong><span>Focus on abilities, not limits</span></div>
+    </div>
 </section>
 {% endblock %}
