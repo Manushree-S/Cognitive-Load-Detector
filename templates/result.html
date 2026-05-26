@@ -110,7 +110,7 @@
 <section class="surface result-header">
     <div>
         <p class="text-uppercase fw-bold mb-2" style="color: var(--brand);">Step 3</p>
-        <h1>AI Analysis Result</h1>
+        <h1>Assessment Result</h1>
         <p class="text-muted mb-0">
             Student: <strong>{{ student_name }}</strong> &nbsp; Grade band: <strong>{{ grade_level }}</strong>
         </p>
@@ -122,8 +122,12 @@
 
 <section class="metric-grid">
     <div class="metric">
-        <div class="metric-label">Accuracy</div>
-        <p class="metric-value">{{ accuracy }}%</p>
+        <div class="metric-label">Correct answers</div>
+        <p class="metric-value">{{ correct_answers }}/{{ total_questions }}</p>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Answers to review</div>
+        <p class="metric-value">{{ incorrect_answers }}</p>
     </div>
     <div class="metric">
         <div class="metric-label">Attention score</div>
@@ -173,8 +177,8 @@
 
 <section class="result-layout">
     <div class="surface panel">
-        <h2 class="h4 fw-bold mb-1">Cognitive Load Metrics Graph</h2>
-        <p class="graph-subtitle">Accuracy, attention, movement behavior, idle percentage, and window switches</p>
+        <h2 class="h4 fw-bold mb-1">Assessment Chart</h2>
+        <p class="graph-subtitle">Answers, focus, movement, pause time, and support cues</p>
         <canvas id="resultChart"></canvas>
     </div>
 
@@ -191,23 +195,23 @@
 
 <section class="result-layout mt-4">
     <div class="surface panel">
-        <h2 class="h4 fw-bold mb-3">Cognitive Analysis</h2>
+        <h2 class="h4 fw-bold mb-3">Learning Summary</h2>
         <p class="mb-0">{{ analysis }}</p>
     </div>
 
     <aside class="surface panel positive-panel">
-        <h2 class="h4 fw-bold mb-3">Grade-based Feedback</h2>
+        <h2 class="h4 fw-bold mb-3">Answer-based Feedback</h2>
         <p class="mb-0">{{ feedback }}</p>
     </aside>
 </section>
 
 <section class="surface panel positive-panel mt-4">
-    <h2 class="h4 fw-bold mb-3">Graph Analysis</h2>
+    <h2 class="h4 fw-bold mb-3">Chart Summary</h2>
     <p class="mb-0">{{ graph_analysis }}</p>
 </section>
 
 <section class="surface panel mt-4">
-    <h2 class="h4 fw-bold mb-3">Camera Support Insight</h2>
+    <h2 class="h4 fw-bold mb-3">Camera Support Note</h2>
     <p class="mb-0">{{ camera_analysis }}</p>
 </section>
 
@@ -222,11 +226,12 @@
     new Chart(ctx, {
         type: "bar",
         data: {
-            labels: ["Accuracy", "Attention", "Random move rate", "Option switch rate", "Idle %", "Window switches", "Face cues", "Support signals"],
+            labels: ["Correct answers", "Answers to review", "Attention", "Random move rate", "Option switch rate", "Idle %", "Window switches", "Face cues", "Support signals"],
             datasets: [{
                 label: "Assessment Metrics",
                 data: [
-                    {{ accuracy|default:0 }},
+                    {{ correct_answers|default:0 }},
+                    {{ incorrect_answers|default:0 }},
                     {{ attention_score|default:0 }},
                     {{ random_movement_rate|default:0 }},
                     {{ option_switch_rate|default:0 }},
@@ -235,7 +240,7 @@
                     {{ face_missing_events|default:0 }},
                     {{ reading_support_events|default:0 }}
                 ],
-                backgroundColor: ["#2457c5", "#15906b", "#c97914", "#8c6dd7", "#c83f49", "#5b6680", "#00a2c7", "#7a9a01"],
+                backgroundColor: ["#2457c5", "#c83f49", "#15906b", "#c97914", "#8c6dd7", "#c83f49", "#5b6680", "#00a2c7", "#7a9a01"],
                 borderRadius: 6
             }]
         },
