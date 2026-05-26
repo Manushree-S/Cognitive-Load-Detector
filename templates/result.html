@@ -89,6 +89,61 @@
         border-bottom: 0;
     }
 
+    .student-feedback {
+        margin-top: 24px;
+    }
+
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin: 16px 0;
+    }
+
+    .emoji-choice {
+        position: relative;
+    }
+
+    .emoji-choice input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .emoji-choice span {
+        display: grid;
+        min-height: 92px;
+        place-items: center;
+        gap: 4px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        cursor: pointer;
+        text-align: center;
+        font-weight: 900;
+    }
+
+    .emoji-choice strong {
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .emoji-choice input:checked + span {
+        border-color: var(--accent);
+        background: #eef9f5;
+        color: var(--accent);
+    }
+
+    .saved-message {
+        padding: 12px 14px;
+        border: 1px solid #bfe7d9;
+        border-radius: 8px;
+        color: var(--accent);
+        background: #eef9f5;
+        font-weight: 900;
+    }
+
     canvas {
         width: 100% !important;
         max-height: 360px;
@@ -97,7 +152,8 @@
     @media (max-width: 900px) {
         .result-header,
         .result-layout,
-        .metric-grid {
+        .metric-grid,
+        .emoji-grid {
             grid-template-columns: 1fr;
         }
 
@@ -213,6 +269,54 @@
 <section class="surface panel mt-4">
     <h2 class="h4 fw-bold mb-3">Camera Support Note</h2>
     <p class="mb-0">{{ camera_analysis }}</p>
+</section>
+
+<section class="surface panel student-feedback">
+    <h2 class="h4 fw-bold mb-2">Student Feedback</h2>
+    <p class="text-muted mb-0">{{ student_feedback_prompt }}</p>
+
+    {% if student_feedback_saved %}
+        <div class="saved-message mt-3">{{ student_feedback_saved }}</div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'student_feedback' %}">
+        {% csrf_token %}
+        <div class="emoji-grid" role="radiogroup" aria-label="Student emoji feedback">
+            <label class="emoji-choice">
+                <input type="radio" name="emoji" value="very_happy" required>
+                <span><strong>😄</strong>Very good</span>
+            </label>
+            <label class="emoji-choice">
+                <input type="radio" name="emoji" value="happy" required>
+                <span><strong>🙂</strong>Good</span>
+            </label>
+            <label class="emoji-choice">
+                <input type="radio" name="emoji" value="okay" required>
+                <span><strong>😐</strong>Okay</span>
+            </label>
+            <label class="emoji-choice">
+                <input type="radio" name="emoji" value="confused" required>
+                <span><strong>😕</strong>Confusing</span>
+            </label>
+            <label class="emoji-choice">
+                <input type="radio" name="emoji" value="tired" required>
+                <span><strong>😴</strong>Tired</span>
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold" for="student_comment">Comment</label>
+            <textarea
+                class="form-control"
+                id="student_comment"
+                name="comment"
+                rows="3"
+                placeholder="Write one thing that felt easy or difficult."
+            ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+    </form>
 </section>
 
 <div class="d-flex flex-wrap gap-2 mt-4">

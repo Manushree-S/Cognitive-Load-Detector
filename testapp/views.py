@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from .models import TestResult
+from .models import StudentFeedback, TestResult
 
 import time
 
@@ -237,6 +237,7 @@ def test_page(request):
             "analysis": analysis,
             "graph_analysis": graph_analysis,
             "camera_analysis": camera_analysis,
+            "student_feedback_prompt": get_student_feedback_prompt(grade_level),
         }
 
         return redirect("result")
@@ -260,7 +261,50 @@ def result_page(request):
     if not result:
         return redirect("student_details")
 
+    result["student_feedback_prompt"] = get_student_feedback_prompt(
+        result.get("grade_level", "3-5")
+    )
+    result["student_feedback_saved"] = request.session.pop(
+        "student_feedback_saved",
+        ""
+    )
+
     return render(request, "result.html", result)
+
+
+@login_required
+def student_feedback(request):
+    result = request.session.get("latest_result")
+
+    if not result:
+        return redirect("student_details")
+
+    if request.method != "POST":
+        return redirect("result")
+
+    emoji = request.POST.get("emoji", "")
+    comment = request.POST.get("comment", "").strip()
+    valid_emojis = {
+        "very_happy",
+        "happy",
+        "okay",
+        "confused",
+        "tired",
+    }
+
+    if emoji in valid_emojis:
+        StudentFeedback.objects.create(
+            user=request.user,
+            student_name=result.get("student_name", "Student"),
+            grade_level=result.get("grade_level", "3-5"),
+            emoji=emoji,
+            comment=comment,
+        )
+        request.session["student_feedback_saved"] = "Thank you. Your feedback was saved."
+    else:
+        request.session["student_feedback_saved"] = "Please choose an emoji before submitting."
+
+    return redirect("result")
 
 
 @login_required
@@ -617,3 +661,14 @@ def get_camera_analysis(face_missing_events, reading_support_events, support_sig
         "Camera support did not record a strong concern. Continue using the camera as a gentle support cue, "
         "not as a medical stress detector."
     )
+
+
+def get_student_feedback_prompt(grade_level):
+    prompts = {
+        "1-2": "How did the test feel? Pick a face and write a small note if you want.",
+        "3-5": "How was the test for you? Choose an emoji and add one short comment.",
+        "6-8": "How did the assessment feel? Choose an emoji and share what helped or felt difficult.",
+        "9-10": "Share your test experience. Choose an emoji and add a brief reflection.",
+    }
+
+    return prompts.get(grade_level, prompts["3-5"])

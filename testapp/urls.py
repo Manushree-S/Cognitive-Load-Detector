@@ -31,6 +31,13 @@ urlpatterns = [
         name='result'
     ),
 
+    # Student Feedback
+    path(
+        'feedback/',
+        views.student_feedback,
+        name='student_feedback'
+    ),
+
     # Dashboard
     path(
         'dashboard/',
