@@ -268,6 +268,10 @@ def result_page(request):
         "student_feedback_saved",
         ""
     )
+    result["student_feedback_error"] = request.session.pop(
+        "student_feedback_error",
+        False
+    )
 
     return render(request, "result.html", result)
 
@@ -300,9 +304,11 @@ def student_feedback(request):
             emoji=emoji,
             comment=comment,
         )
-        request.session["student_feedback_saved"] = "Thank you. Your feedback was saved."
+        request.session["student_feedback_saved"] = "Submitted feedback."
+        request.session["student_feedback_error"] = False
     else:
         request.session["student_feedback_saved"] = "Please choose an emoji before submitting."
+        request.session["student_feedback_error"] = True
 
     return redirect("result")
 
@@ -313,15 +319,34 @@ def dashboard(request):
     chart_results = list(results.order_by("created_at"))
     attempts = list(range(1, len(chart_results) + 1))
     errors = [result.errors for result in chart_results]
+    total_attempts = len(chart_results)
+    high_load_attempts = sum(
+        1 for result in chart_results if result.load_level == "High"
+    )
+
+    if total_attempts:
+        average_accuracy = round(
+            sum(result.accuracy for result in chart_results) / total_attempts,
+            1,
+        )
+        average_attention = round(
+            sum(result.attention_score for result in chart_results) / total_attempts,
+            1,
+        )
+    else:
+        average_accuracy = 0
+        average_attention = 0
 
     if chart_results:
         latest = chart_results[-1]
+        latest_load = latest.load_level
         analysis = (
             f"Latest assessment shows {latest.load_level.lower()} cognitive load "
             f"with {latest.accuracy}% accuracy and an attention score of "
             f"{latest.attention_score}."
         )
     else:
+        latest_load = "No attempts"
         analysis = "No assessment attempts are available yet."
 
     return render(
@@ -332,6 +357,11 @@ def dashboard(request):
             "attempts": attempts,
             "errors": errors,
             "analysis": analysis,
+            "total_attempts": total_attempts,
+            "average_accuracy": average_accuracy,
+            "average_attention": average_attention,
+            "latest_load": latest_load,
+            "high_load_attempts": high_load_attempts,
         },
     )
 
@@ -351,13 +381,23 @@ def get_result_analysis(
     reading_support_events,
     load,
 ):
-    if grade_level in {"1-2", "3-5"}:
+    if grade_level == "1-2":
         return (
-            f"{student_name} got {correct_answers} out of {total_questions} "
-            f"answers right. {incorrect_answers} answer"
-            f"{'' if incorrect_answers == 1 else 's'} can be practiced again. "
-            f"The work looked {load.lower()} load, so the next practice can stay "
-            "calm, short, and step by step."
+            f"{student_name} finished the test and got {correct_answers} out of "
+            f"{total_questions} answers right. That is a good effort. "
+            f"{incorrect_answers} answer"
+            f"{'' if incorrect_answers == 1 else 's'} can be tried again with "
+            "help. Next time, keep the practice short, calm, and step by step."
+        )
+
+    if grade_level == "3-5":
+        return (
+            f"{student_name} completed the test and answered {correct_answers} "
+            f"out of {total_questions} correctly. That shows real effort. "
+            f"{incorrect_answers} answer"
+            f"{'' if incorrect_answers == 1 else 's'} need more practice, and "
+            "that is okay. The next round should focus on reading slowly, "
+            "checking the question, and trying one practice area at a time."
         )
 
     if grade_level == "6-8":
@@ -411,23 +451,39 @@ def get_answer_feedback(grade_level, correct_answers, incorrect_answers, total_q
 
 def get_early_primary_feedback(correct_answers, incorrect_answers, total_questions, load):
     if correct_answers == total_questions:
-        strength = f"Wonderful work. You got all {total_questions} answers right."
+        strength = (
+            f"Wonderful work. You got all {total_questions} answers right, "
+            "and you kept trying until the end."
+        )
     elif correct_answers > 0:
-        strength = f"Good trying. You got {correct_answers} answer{'' if correct_answers == 1 else 's'} right."
+        strength = (
+            f"Good effort. You got {correct_answers} answer"
+            f"{'' if correct_answers == 1 else 's'} right, so there is "
+            "something you already understand."
+        )
     else:
-        strength = "Good trying. You finished the test, and that is a brave start."
+        strength = (
+            "You finished the test, and that is a brave start. Now we know "
+            "what to practice together."
+        )
 
     if incorrect_answers == 0:
         next_step = "Keep going slowly and carefully."
     elif incorrect_answers == 1:
-        next_step = "Try the one tricky question again with help."
+        next_step = (
+            "One question needs another try. That does not mean you did badly; "
+            "it only shows where to practice next."
+        )
     else:
-        next_step = f"Try the {incorrect_answers} tricky questions again, one by one."
+        next_step = (
+            f"{incorrect_answers} questions need another try. We can practice "
+            "them one by one, with help if needed."
+        )
 
     load_step = {
-        "Low": "Your calm work helped you.",
-        "Medium": "Take a small pause before you choose.",
-        "High": "A short break and read-aloud can help next time.",
+        "Low": "You looked steady, so keep using this calm pace.",
+        "Medium": "Next time, take a small pause before you choose.",
+        "High": "Next time, a short break or read-aloud help can make it easier.",
     }
 
     return f"{strength} {next_step} {load_step.get(load, load_step['Medium'])}"
@@ -435,27 +491,49 @@ def get_early_primary_feedback(correct_answers, incorrect_answers, total_questio
 
 def get_primary_feedback(correct_answers, incorrect_answers, total_questions, load):
     if correct_answers == total_questions:
-        strength = f"Great job. You got all {total_questions} answers correct."
+        strength = (
+            f"Great job. You got all {total_questions} answers correct. "
+            "Your careful work really helped."
+        )
     elif correct_answers >= max(1, total_questions * 0.75):
-        strength = f"Great effort. You got {correct_answers} out of {total_questions} correct."
+        strength = (
+            f"Great effort. You got {correct_answers} out of {total_questions} "
+            "correct, so most of your thinking was on the right path."
+        )
     elif correct_answers >= max(1, total_questions * 0.5):
-        strength = f"Good work. You got {correct_answers} out of {total_questions} correct."
+        strength = (
+            f"Good work. You got {correct_answers} out of {total_questions} "
+            "correct, and that gives you a strong place to build from."
+        )
     elif correct_answers > 0:
-        strength = f"Nice try. You got {correct_answers} answer{'' if correct_answers == 1 else 's'} correct."
+        strength = (
+            f"You kept going and got {correct_answers} answer"
+            f"{'' if correct_answers == 1 else 's'} correct. That matters, "
+            "because it shows what you already know."
+        )
     else:
-        strength = "Nice try. You completed the test, and now we know what to practice."
+        strength = (
+            "You completed the test, and that gives us useful clues. Now we "
+            "know what to practice first."
+        )
 
     if incorrect_answers == 0:
         next_step = "Keep using the same careful thinking."
     elif incorrect_answers == 1:
-        next_step = "Practice the one question that was tricky."
+        next_step = (
+            "One answer needs review. It is not a bad mistake; it is a clue "
+            "for what to learn next."
+        )
     else:
-        next_step = f"Practice the {incorrect_answers} tricky questions slowly, one at a time."
+        next_step = (
+            f"{incorrect_answers} answers need review. Work on them slowly, "
+            "one at a time, and check the question before choosing."
+        )
 
     load_step = {
-        "Low": "You looked steady while working.",
+        "Low": "You looked steady while working, so keep that pace.",
         "Medium": "Next time, read the question twice before choosing.",
-        "High": "Next time, try a shorter round or use read-aloud help.",
+        "High": "Next time, try a shorter round or use read-aloud help first.",
     }
 
     return f"{strength} {next_step} {load_step.get(load, load_step['Medium'])}"
@@ -561,10 +639,17 @@ def get_graph_analysis(
     face_missing_events,
     support_signal,
 ):
-    if grade_level in {"1-2", "3-5"}:
+    if grade_level == "1-2":
         base = (
-            f"The graph shows {correct_answers} correct and "
-            f"{incorrect_answers} to practice."
+            f"The graph shows {correct_answers} answers right and "
+            f"{incorrect_answers} answer"
+            f"{'' if incorrect_answers == 1 else 's'} to try again."
+        )
+    elif grade_level == "3-5":
+        base = (
+            f"The graph shows {correct_answers} correct answers and "
+            f"{incorrect_answers} answer"
+            f"{'' if incorrect_answers == 1 else 's'} to practice next."
         )
     elif grade_level == "6-8":
         base = (
@@ -610,7 +695,7 @@ def get_graph_analysis(
             "attention score": "focus",
         }
         next_step = {
-            "Low": "Keep going at this pace.",
+            "Low": "Keep going at this calm pace.",
             "Medium": "Read slowly, then choose.",
             "High": "Try fewer questions with help first.",
         }

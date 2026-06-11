@@ -4,3 +4,14 @@ db.sqlite3
 *.sqlite3
 .env
 venv/
+datasets/
+model_artifacts/
+*.joblib
+# Logs
+*.log
+server.err.log
+server.out.log
+
+# MediaPipe / ML cache
+*.h5
+*.keras

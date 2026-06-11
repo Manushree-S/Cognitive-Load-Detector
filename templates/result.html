@@ -144,6 +144,42 @@
         font-weight: 900;
     }
 
+    .feedback-notification {
+        position: sticky;
+        top: 14px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+        border: 1px solid #bfe7d9;
+        border-radius: 8px;
+        color: var(--accent);
+        background: #eef9f5;
+        box-shadow: 0 12px 28px rgba(14, 45, 35, 0.12);
+        font-weight: 900;
+    }
+
+    .feedback-notification.error {
+        border-color: #f1c6ca;
+        color: var(--danger);
+        background: #fff2f3;
+    }
+
+    .feedback-notification button {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 8px;
+        color: inherit;
+        background: rgba(255, 255, 255, 0.82);
+        font-size: 1.25rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
     canvas {
         width: 100% !important;
         max-height: 360px;
@@ -162,6 +198,17 @@
         }
     }
 </style>
+
+{% if student_feedback_saved %}
+    <div
+        class="feedback-notification {% if student_feedback_error %}error{% endif %}"
+        role="{% if student_feedback_error %}alert{% else %}status{% endif %}"
+        aria-live="polite"
+    >
+        <span>{{ student_feedback_saved }}</span>
+        <button type="button" aria-label="Dismiss feedback message" data-dismiss-feedback>&times;</button>
+    </div>
+{% endif %}
 
 <section class="surface result-header">
     <div>
@@ -359,5 +406,16 @@
             }
         }
     });
+</script>
+
+<script>
+    const feedbackNotice = document.querySelector("[data-dismiss-feedback]")?.closest(".feedback-notification");
+    const dismissFeedbackButton = document.querySelector("[data-dismiss-feedback]");
+
+    if (dismissFeedbackButton && feedbackNotice) {
+        dismissFeedbackButton.addEventListener("click", () => {
+            feedbackNotice.remove();
+        });
+    }
 </script>
 {% endblock %}

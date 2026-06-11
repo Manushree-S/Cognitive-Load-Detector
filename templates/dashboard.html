@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 {% block title %}Assessment Dashboard{% endblock %}
 
@@ -24,6 +25,81 @@
         padding: 24px;
     }
 
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .kpi-card {
+        min-height: 118px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+    }
+
+    .kpi-label {
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .kpi-value {
+        margin: 0;
+        color: var(--ink);
+        font-size: 1.9rem;
+        font-weight: 900;
+        line-height: 1.15;
+    }
+
+    .kpi-help {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+    }
+
+    .load-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 82px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 900;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .load-badge.low {
+        color: var(--accent);
+        background: #eef9f5;
+        border: 1px solid #bfe7d9;
+    }
+
+    .load-badge.medium {
+        color: #9a5c0f;
+        background: #fff7e9;
+        border: 1px solid #f1d6a6;
+    }
+
+    .load-badge.high {
+        color: var(--danger);
+        background: #fff2f3;
+        border: 1px solid #f1c6ca;
+    }
+
+    .load-badge.neutral {
+        color: var(--muted);
+        background: #f8fbff;
+        border: 1px solid var(--line);
+    }
+
     .load-low {
         color: var(--accent);
     }
@@ -41,9 +117,17 @@
         max-height: 360px;
     }
 
+    @media (max-width: 980px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
     @media (max-width: 768px) {
-        .dashboard-head {
+        .dashboard-head,
+        .kpi-grid {
             display: grid;
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -54,6 +138,46 @@
         <h1>Assessment Dashboard</h1>
     </div>
     <a class="btn btn-primary" href="{% url 'student_details' %}">New Assessment</a>
+</section>
+
+<section class="kpi-grid" aria-label="Dashboard key metrics">
+    <article class="kpi-card">
+        <div class="kpi-label">Total attempts</div>
+        <p class="kpi-value">{{ total_attempts }}</p>
+        <p class="kpi-help">Completed assessments</p>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-label">Average accuracy</div>
+        <p class="kpi-value">{{ average_accuracy }}%</p>
+        <p class="kpi-help">Across all attempts</p>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-label">Average attention</div>
+        <p class="kpi-value">{{ average_attention }}</p>
+        <p class="kpi-help">Higher is better</p>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-label">Latest load</div>
+        {% if latest_load == "Low" %}
+            <span class="load-badge low">Low Load</span>
+        {% elif latest_load == "Medium" %}
+            <span class="load-badge medium">Medium Load</span>
+        {% elif latest_load == "High" %}
+            <span class="load-badge high">High Load</span>
+        {% else %}
+            <span class="load-badge neutral">{{ latest_load }}</span>
+        {% endif %}
+        <p class="kpi-help">Most recent result</p>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-label">High load attempts</div>
+        <p class="kpi-value">{{ high_load_attempts }}</p>
+        <p class="kpi-help">Needs attention</p>
+    </article>
 </section>
 
 <section class="surface panel mb-4">
@@ -77,16 +201,20 @@
                 {% for r in results %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ r.created_at|date:"d M Y, H:i" }}</td>
+                        <td>{{ r.created_at|localtime|date:"d M Y, h:i A" }} IST</td>
                         <td>{{ r.subject }}</td>
                         <td>{{ r.accuracy }}%</td>
                         <td>{{ r.attention_score }}</td>
                         <td>{{ r.time_taken }}s</td>
                         <td>{{ r.errors }}</td>
                         <td>
-                            <strong class="{% if r.load_level == 'Low' %}load-low{% elif r.load_level == 'Medium' %}load-medium{% else %}load-high{% endif %}">
-                                {{ r.load_level }}
-                            </strong>
+                            {% if r.load_level == "Low" %}
+                                <span class="load-badge low">Low</span>
+                            {% elif r.load_level == "Medium" %}
+                                <span class="load-badge medium">Medium</span>
+                            {% else %}
+                                <span class="load-badge high">High</span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% empty %}
