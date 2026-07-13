@@ -242,6 +242,31 @@ Add screenshots for:
 
 ---
 
+# Benefits for ADHD Students
+Our system helps by:
+
+* Detecting loss of attention early.
+* Identifying signs of distraction.
+* Monitoring mental fatigue.
+* Helping teachers adjust lesson difficulty.
+* Supporting personalized learning.
+* Improving engagement and concentration.
+
+---
+
+# Benefits for Dyslexic Students
+The system helps by:
+
+* Detecting increased reading effort.
+* Identifying reading fatigue.
+* Monitoring attention during learning.
+* Suggesting when learning difficulty is too high.
+* Allowing teachers to provide additional support.
+* Creating personalized learning experiences.
+
+---
+
+
 # 🎯 Future Improvements
 
 * Cloud Deployment
