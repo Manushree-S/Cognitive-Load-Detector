@@ -1,0 +1,124 @@
+from PIL import Image
+import os
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers, models
+
+# Image settings
+IMAGE_SIZE = (128, 128)
+DATASET_PATH = "dataset"
+
+images = []
+labels = []
+
+# Assume dataset structure:
+# dataset/
+#    cats/
+#    dogs/
+
+classes = sorted(os.listdir(DATASET_PATH))
+
+print("Classes:", classes)
+
+for label, class_name in enumerate(classes):
+    class_path = os.path.join(DATASET_PATH, class_name)
+
+    if not os.path.isdir(class_path):
+        continue
+
+    for file in os.listdir(class_path):
+
+        image_path = os.path.join(class_path, file)
+
+        try:
+            img = Image.open(image_path)
+
+            # Convert to RGB
+            img = img.convert("RGB")
+
+            # Resize using Pillow
+            img = img.resize(IMAGE_SIZE)
+
+            # Convert to NumPy array
+            img_array = np.array(img)
+
+            images.append(img_array)
+            labels.append(label)
+
+        except Exception as e:
+            print("Skipping:", image_path, e)
+
+# Convert to NumPy
+X = np.array(images, dtype=np.float32) / 255.0
+y = np.array(labels)
+
+print("Dataset Shape:", X.shape)
+
+# Split dataset
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+X_test = X[split:]
+
+y_train = y[:split]
+y_test = y[split:]
+
+# Build CNN model
+model = models.Sequential([
+    layers.Input(shape=(128, 128, 3)),
+
+    layers.Conv2D(32, (3, 3), activation="relu"),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Conv2D(64, (3, 3), activation="relu"),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Conv2D(128, (3, 3), activation="relu"),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Flatten(),
+
+    layers.Dense(128, activation="relu"),
+    layers.Dropout(0.5),
+
+    layers.Dense(len(classes), activation="softmax")
+])
+
+model.compile(
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"]
+)
+
+# Train
+history = model.fit(
+    X_train,
+    y_train,
+    validation_data=(X_test, y_test),
+    epochs=10,
+    batch_size=32
+)
+
+# Evaluate
+loss, accuracy = model.evaluate(X_test, y_test)
+
+print("Test Accuracy:", accuracy)
+
+# Save model
+model.save("image_classifier.keras")
+
+print("Model saved successfully.")
+
+# Predict on one image
+sample = Image.open("test.jpg")
+sample = sample.convert("RGB")
+sample = sample.resize(IMAGE_SIZE)
+
+sample = np.array(sample, dtype=np.float32) / 255.0
+sample = np.expand_dims(sample, axis=0)
+
+prediction = model.predict(sample)
+
+predicted_class = classes[np.argmax(prediction)]
+
+print("Predicted Class:", predicted_class)
