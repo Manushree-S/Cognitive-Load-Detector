@@ -1,0 +1,297 @@
+# ============================================================
+# Complete Machine Learning Training Pipeline
+# Author: Example
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import joblib
+
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import (
+    train_test_split,
+    GridSearchCV,
+    cross_val_score
+)
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+
+from sklearn.pipeline import Pipeline
+
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+# ============================================================
+# Step 1: Load Dataset
+# ============================================================
+
+print("=" * 60)
+print("Loading Dataset")
+print("=" * 60)
+
+dataset = load_breast_cancer()
+
+X = pd.DataFrame(dataset.data, columns=dataset.feature_names)
+y = pd.Series(dataset.target)
+
+print("Dataset Shape:", X.shape)
+print("Target Shape:", y.shape)
+
+# ============================================================
+# Step 2: Explore Dataset
+# ============================================================
+
+print("\nFirst Five Rows")
+print(X.head())
+
+print("\nStatistical Summary")
+print(X.describe())
+
+print("\nMissing Values")
+print(X.isnull().sum())
+
+# ============================================================
+# Step 3: Artificial Missing Values (Demo)
+# ============================================================
+
+np.random.seed(42)
+
+for column in X.columns[:5]:
+    random_index = np.random.choice(X.index, 15)
+    X.loc[random_index, column] = np.nan
+
+print("\nMissing Values After Injection")
+print(X.isnull().sum())
+
+# ============================================================
+# Step 4: Split Dataset
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+print("\nTraining Samples:", len(X_train))
+print("Testing Samples:", len(X_test))
+
+# ============================================================
+# Step 5: Build Pipeline
+# ============================================================
+
+pipeline = Pipeline([
+    (
+        "imputer",
+        SimpleImputer(strategy="mean")
+    ),
+    (
+        "scaler",
+        StandardScaler()
+    ),
+    (
+        "classifier",
+        RandomForestClassifier(random_state=42)
+    )
+])
+
+# ============================================================
+# Step 6: Hyperparameter Grid
+# ============================================================
+
+parameter_grid = {
+
+    "classifier__n_estimators": [100, 200],
+
+    "classifier__max_depth": [
+        5,
+        10,
+        None
+    ],
+
+    "classifier__min_samples_split": [
+        2,
+        5
+    ],
+
+    "classifier__min_samples_leaf": [
+        1,
+        2
+    ]
+}
+
+# ============================================================
+# Step 7: Grid Search
+# ============================================================
+
+print("\nRunning Grid Search...")
+
+grid_search = GridSearchCV(
+    estimator=pipeline,
+    param_grid=parameter_grid,
+    cv=5,
+    scoring="accuracy",
+    n_jobs=-1,
+    verbose=2
+)
+
+grid_search.fit(X_train, y_train)
+
+print("\nBest Parameters")
+print(grid_search.best_params_)
+
+print("\nBest Cross Validation Accuracy")
+print(grid_search.best_score_)
+
+best_model = grid_search.best_estimator_
+
+# ============================================================
+# Step 8: Cross Validation
+# ============================================================
+
+print("\nRunning Cross Validation")
+
+scores = cross_val_score(
+    best_model,
+    X_train,
+    y_train,
+    cv=5
+)
+
+print("Scores:", scores)
+print("Average:", scores.mean())
+
+# ============================================================
+# Step 9: Predictions
+# ============================================================
+
+predictions = best_model.predict(X_test)
+
+# ============================================================
+# Step 10: Metrics
+# ============================================================
+
+accuracy = accuracy_score(y_test, predictions)
+
+precision = precision_score(y_test, predictions)
+
+recall = recall_score(y_test, predictions)
+
+f1 = f1_score(y_test, predictions)
+
+print("\nAccuracy :", accuracy)
+print("Precision:", precision)
+print("Recall   :", recall)
+print("F1 Score :", f1)
+
+# ============================================================
+# Step 11: Classification Report
+# ============================================================
+
+print("\nClassification Report")
+print(classification_report(
+    y_test,
+    predictions
+))
+
+# ============================================================
+# Step 12: Confusion Matrix
+# ============================================================
+
+print("\nConfusion Matrix")
+
+matrix = confusion_matrix(
+    y_test,
+    predictions
+)
+
+print(matrix)
+
+# ============================================================
+# Step 13: Feature Importance
+# ============================================================
+
+classifier = best_model.named_steps["classifier"]
+
+importance = classifier.feature_importances_
+
+importance_df = pd.DataFrame({
+
+    "Feature": X.columns,
+    "Importance": importance
+
+})
+
+importance_df = importance_df.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+print("\nTop 10 Important Features")
+
+print(
+    importance_df.head(10)
+)
+
+# ============================================================
+# Step 14: Save Model
+# ============================================================
+
+joblib.dump(
+    best_model,
+    "trained_random_forest.pkl"
+)
+
+print("\nModel saved successfully.")
+
+# ============================================================
+# Step 15: Load Model Again
+# ============================================================
+
+loaded_model = joblib.load(
+    "trained_random_forest.pkl"
+)
+
+sample = X_test.iloc[:5]
+
+prediction = loaded_model.predict(sample)
+
+print("\nPredictions for first five samples")
+print(prediction)
+
+# ============================================================
+# Step 16: Probability Prediction
+# ============================================================
+
+probabilities = loaded_model.predict_proba(sample)
+
+print("\nPrediction Probabilities")
+
+print(probabilities)
+
+# ============================================================
+# Step 17: Final Summary
+# ============================================================
+
+print("\n" + "=" * 60)
+
+print("Training Completed Successfully")
+
+print("Best Accuracy :", accuracy)
+
+print("Samples Trained:", len(X_train))
+
+print("Samples Tested :", len(X_test))
+
+print("=" * 60)
