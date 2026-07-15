@@ -1,4 +1,4 @@
-"""Main GUI — Cognitive Load Detection System (FINAL)"""
+"""Main GUI — Cognitive Load Detection System """
 
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
