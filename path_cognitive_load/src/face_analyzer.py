@@ -1,4 +1,4 @@
-"""Facial feature extraction - 21 features"""
+"""Facial feature extraction - 21 different features"""
 import cv2
 import numpy as np
 from collections import deque
